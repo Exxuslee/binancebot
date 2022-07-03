@@ -53,5 +53,4 @@ const clean = client.ws.depth('ETHBTC', depth => {
     { price: '19134.79000000', quantity: '0.11340700' },
     { price: '19150.00000000', quantity: '0.12271600' }
   ]
-}
- */
+} */
