@@ -4,8 +4,10 @@
   "description": "binance bot",
   "main": "src/index.ts",
   "scripts": {
+    "start": "set NODE_ENV=production nodemon ./build/server.js",
+    "build": "set NODE_ENV=production tsc",
     "dev": "nodemon ./build/server.js",
-    "build": "tsc",
+    "build:dev": "set NODE_ENV=development tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -17,6 +19,7 @@
     "dayjs": "^1.11.1",
     "dotenv": "^16.0.1",
     "node-binance-api": "^0.13.1",
+    "node-telegram-bot-api": "^0.58.0",
     "safe-require": "^1.0.4",
     "technicalindicators": "^3.1.0",
     "winston": "^3.8.1"
