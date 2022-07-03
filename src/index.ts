@@ -1,22 +1,8 @@
-require("dotenv").config();
-const Binance = require('binance-api-node')
-const options = {
-    apiKey: process.env.tAPIKEY,
-    apiSecret: process.env.tAPISECRET,
-    //  getTime: Date.now,
-    httpBase: 'https://testnet.binance.vision',
-    // httpBase:'https://api.binance.com',
-    wsBase: 'wss://testnet.binance.vision/ws'
+import { Bot } from './bot';
+import { StrategyConfig } from './init';
 
-};
-const client = Binance.default(options);
-
-async function start() {
-    console.log(await client.ping())
-    console.log(await client.accountInfo())
+if (process.env.NODE_ENV !== 'test') {
+    const tradingBot = new Bot(StrategyConfig);
+    tradingBot.prepare();
+    //tradingBot.run();
 }
-start().then(r => console.log("end", r))
-
-client.ws.aggTrades('BTCUSDT', trade => {
-    console.log(trade)
-})
