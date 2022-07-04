@@ -1,14 +1,10 @@
 import fs from 'fs';
 import { createLogger, format, transports } from 'winston';
 
-const loggerFilePath = {
-  production: 'logs/bot-prod.log',
-  development: 'logs/bot-dev.log',
-  test: 'logs/bot-test.log',
-};
+const loggerFilePath = 'logs/bot.log'
 
-if (fs.existsSync(loggerFilePath[process.env.NODE_ENV])) {
-  fs.unlinkSync(loggerFilePath[process.env.NODE_ENV]);
+if (fs.existsSync(loggerFilePath)) {
+  fs.unlinkSync(loggerFilePath);
 }
 
 export const initLogger = () =>
@@ -17,7 +13,7 @@ export const initLogger = () =>
     format: format.simple(),
     transports: [
       new transports.File({
-        filename: loggerFilePath[process.env.NODE_ENV],
+        filename: loggerFilePath,
       }),
     ],
   });

@@ -82,7 +82,7 @@ export class Cache {
     optionsHash: string
   ) {
     let key = `${symbol}-${timeFrame}-${optionsHash}`;
-    return this.memory[key] ? true : false;
+    return !!this.memory[key];
   }
 
   /**
