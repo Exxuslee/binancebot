@@ -62,14 +62,13 @@ export class Bot {
         this.exchangeInfo = await binanceClient.exchangeInfo();
 
         // Store account information to local
-        this.currentBalance = Number(
-            (await binanceClient.futuresAccountBalance()).find(
-                (b) => b.asset === this.strategyConfigs[0].base
-            ).balance
+        let accountInfo = await binanceClient.accountInfo()
+        this.currentBalance = Number(accountInfo.balances.find(
+                (b) => b.asset == this.strategyConfigs[0].base
+            ).free
         );
         this.lastMonthBalance = this.currentBalance;
         this.lastDayBalance = this.currentBalance;
-        console.log(this.currentBalance)
 
         // Main
         this.strategyConfigs.forEach((strategyConfig) => {
