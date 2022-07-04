@@ -1,6 +1,6 @@
-import {CandleChartInterval, ExchangeInfo, FuturesAccountInfoResult, OrderSide, OrderType,} from 'binance-api-node';
+import {Account, CandleChartInterval, ExchangeInfo, OrderSide} from 'binance-api-node';
 import {decimalFloor} from './utils/math';
-import {error, log, logBuySellExecutionOrder} from './utils/log';
+import {log} from './utils/log';
 import {binanceClient} from './init';
 import {loadCandlesMultiTimeFramesFromAPI} from './utils/loadCandleData';
 import {Counter} from './tools/counter';
@@ -18,7 +18,7 @@ export class Bot {
     private strategyConfigs: StrategyConfig[];
 
     private exchangeInfo: ExchangeInfo;
-    private accountInfo: FuturesAccountInfoResult;
+    private accountInfo: Account;
     private hasOpenPosition: { [pair: string]: boolean };
 
     // Counter to fix the max duration of each trade
@@ -162,24 +162,16 @@ export class Bot {
         const pair = asset + base;
 
         // Update the account info
-        this.accountInfo = await binanceClient.futuresAccountInfo();
+        this.accountInfo = await binanceClient.accountInfo();
 
         // Balance information
-        const balances = this.accountInfo.assets;
-        const {walletBalance: assetBalance, availableBalance} = balances.find(
+        const balances = this.accountInfo;
+        const {asset: assetBalance, free: availableBalance} = balances.balances.find(
             (balance) => balance.asset === base
         );
 
-        // Position information
-        const positions = this.accountInfo.positions;
-        const position = positions.find((position) => position.symbol === pair);
-        const hasLongPosition = Number(position.positionAmt) > 0;
-        const hasShortPosition = Number(position.positionAmt) < 0;
-        const positionSize = Math.abs(Number(position.positionAmt));
-        const positionEntryPrice = Number(position.entryPrice);
-
         // Open Orders
-        const currentOpenOrders = await binanceClient.futuresOpenOrders({
+        const currentOpenOrders = await binanceClient.openOrders({
             symbol: pair,
         });
 
@@ -187,33 +179,6 @@ export class Bot {
         const useLongPosition = trendFilter ? trendFilter(candles) === 1 : true;
         const useShortPosition = trendFilter ? trendFilter(candles) === -1 : true;
 
-        // Conditions to take or not a position
-        const canAddToPosition = allowPyramiding
-            ? Number(position.initialMargin) + Number(assetBalance) * risk <=
-            Number(assetBalance) * maxPyramidingAllocation
-            : false;
-        const canTakeLongPosition =
-            (canOpenNewPositionToCloseLast && hasShortPosition) ||
-            (!canOpenNewPositionToCloseLast &&
-                hasShortPosition &&
-                currentOpenOrders.length === 0) ||
-            (!allowPyramiding && !hasLongPosition) ||
-            (allowPyramiding && hasShortPosition && currentOpenOrders.length === 0) ||
-            (allowPyramiding &&
-                hasShortPosition &&
-                currentOpenOrders.length > 0 &&
-                canOpenNewPositionToCloseLast);
-        const canTakeShortPosition =
-            (canOpenNewPositionToCloseLast && hasLongPosition) ||
-            (!canOpenNewPositionToCloseLast &&
-                hasLongPosition &&
-                currentOpenOrders.length === 0) ||
-            (!allowPyramiding && !hasShortPosition) ||
-            (allowPyramiding && hasLongPosition && currentOpenOrders.length === 0) ||
-            (allowPyramiding &&
-                hasLongPosition &&
-                currentOpenOrders.length > 0 &&
-                canOpenNewPositionToCloseLast);
 
         // Precision
         const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
@@ -225,214 +190,36 @@ export class Bot {
             tradingSessions
         );
 
-        // The current position is too long
-        if (
-            maxTradeDuration &&
-            (hasShortPosition || hasLongPosition) &&
-            this.counters[pair]
-        ) {
-            this.counters[pair].decrement();
-            if (this.counters[pair].getValue() == 0) {
-                binanceClient
-                    .futuresOrder({
-                        symbol: pair,
-                        type: OrderType.MARKET,
-                        quantity: String(positionSize),
-                        side: hasLongPosition ? OrderSide.SELL : OrderSide.BUY,
-                    })
-                    .then(() => {
-                        log(
-                            `The position on ${pair} is longer that the maximum authorized duration.`
-                        );
-                    })
-                    .catch(error);
-                return;
-            }
-        }
 
-        // Reset the counter if a previous trade close the position
-        if (
-            maxTradeDuration &&
-            !hasLongPosition &&
-            !hasShortPosition &&
-            this.counters[pair].getValue() < maxTradeDuration
-        ) {
-            this.counters[pair].reset();
-        }
+        // Do not trade with short position if the trend is up
+        if (!useShortPosition) return;
 
-        if (
-            (isTradingSessionActive || positionSize !== 0) &&
-            canTakeLongPosition &&
-            buyStrategy(candles)
-        ) {
-            // Take the profit and not open a new position
-            if (hasShortPosition && unidirectional) {
-                binanceClient
-                    .futuresOrder({
-                        side: OrderSide.BUY,
-                        type: OrderType.MARKET,
-                        symbol: pair,
-                        quantity: String(positionSize),
-                    })
-                    .catch(error);
-                return;
-            }
 
-            // Do not trade with long position if the trend is down
-            if (!useLongPosition) return;
+        // Calculate TP and SL
+        let {takeProfits, stopLoss} = exitStrategy
+            ? exitStrategy(
+                currentPrice,
+                candles,
+                pricePrecision,
+                OrderSide.SELL,
+                this.exchangeInfo
+            )
+            : {takeProfits: [], stopLoss: null};
 
-            // Do not add to the current position if the allocation is over the max allocation
-            if (allowPyramiding && hasLongPosition && !canAddToPosition) return;
+        // Calculate the quantity for the position according to the risk management of the strategy
+        let quantity = riskManagement({
+            asset,
+            base,
+            balance: allowPyramiding
+                ? Number(assetBalance)
+                : Number(availableBalance),
+            risk,
+            enterPrice: currentPrice,
+            stopLossPrice: stopLoss,
+            exchangeInfo: this.exchangeInfo,
+        });
 
-            // Close the open orders of the last trade
-            if (hasShortPosition && currentOpenOrders.length > 0) {
-                await this.closeOpenOrders(pair);
-            }
 
-            // Calculate TP and SL
-            let {takeProfits, stopLoss} = exitStrategy
-                ? exitStrategy(
-                    currentPrice,
-                    candles,
-                    pricePrecision,
-                    OrderSide.BUY,
-                    this.exchangeInfo
-                )
-                : {takeProfits: [], stopLoss: null};
-
-            //Calculate the quantity for the position according to the risk management of the strategy
-            let quantity = riskManagement({
-                asset,
-                base,
-                balance: allowPyramiding
-                    ? Number(assetBalance)
-                    : Number(availableBalance),
-                risk,
-                enterPrice: currentPrice,
-                stopLossPrice: stopLoss,
-                exchangeInfo: this.exchangeInfo,
-            });
-
-            binanceClient
-                .futuresOrder({
-                    side: OrderSide.BUY,
-                    type: OrderType.MARKET,
-                    symbol: pair,
-                    quantity: String(
-                        hasShortPosition ? quantity - positionSize : quantity
-                    ),
-                })
-                .then(() => {
-                    if (takeProfits.length > 0) {
-                        // Create the take profit orders
-                        takeProfits.forEach(({price, quantityPercentage}) => {
-                        });
-                    }
-
-                    if (stopLoss) {
-                        if (takeProfits.length > 1) {
-                        } else {
-                        }
-                    }
-
-                    logBuySellExecutionOrder(
-                        OrderSide.BUY,
-                        asset,
-                        base,
-                        currentPrice,
-                        quantity,
-                        takeProfits,
-                        stopLoss
-                    );
-                })
-                .catch(error);
-        } else if (
-            (isTradingSessionActive || positionSize !== 0) &&
-            canTakeShortPosition &&
-            sellStrategy(candles)
-        ) {
-            // Take the profit and not open a new position
-            if (hasLongPosition && unidirectional) {
-                binanceClient
-                    .futuresOrder({
-                        side: OrderSide.SELL,
-                        type: OrderType.MARKET,
-                        symbol: pair,
-                        quantity: String(positionSize),
-                    })
-                    .catch(error);
-                return;
-            }
-
-            // Do not trade with short position if the trend is up
-            if (!useShortPosition) return;
-
-            // Do not add to the current position if the allocation is over the max allocation
-            if (allowPyramiding && hasShortPosition && !canAddToPosition) return;
-
-            // Close the open orders of the last trade
-            if (hasLongPosition && currentOpenOrders.length > 0) {
-                await this.closeOpenOrders(pair);
-            }
-
-            // Calculate TP and SL
-            let {takeProfits, stopLoss} = exitStrategy
-                ? exitStrategy(
-                    currentPrice,
-                    candles,
-                    pricePrecision,
-                    OrderSide.SELL,
-                    this.exchangeInfo
-                )
-                : {takeProfits: [], stopLoss: null};
-
-            // Calculate the quantity for the position according to the risk management of the strategy
-            let quantity = riskManagement({
-                asset,
-                base,
-                balance: allowPyramiding
-                    ? Number(assetBalance)
-                    : Number(availableBalance),
-                risk,
-                enterPrice: currentPrice,
-                stopLossPrice: stopLoss,
-                exchangeInfo: this.exchangeInfo,
-            });
-
-            binanceClient
-                .futuresOrder({
-                    side: OrderSide.SELL,
-                    type: OrderType.MARKET,
-                    symbol: pair,
-                    quantity: String(
-                        hasLongPosition ? quantity - positionSize : quantity
-                    ),
-                })
-                .then(() => {
-                    if (takeProfits.length > 0) {
-                        // Create the take profit orders
-                        takeProfits.forEach(({price, quantityPercentage}) => {
-                        });
-                    }
-
-                    if (stopLoss) {
-                        if (takeProfits.length > 1) {
-                        } else {
-                        }
-                    }
-
-                    logBuySellExecutionOrder(
-                        OrderSide.SELL,
-                        asset,
-                        base,
-                        currentPrice,
-                        quantity,
-                        takeProfits,
-                        stopLoss
-                    );
-                })
-                .catch(error);
-        }
     }
 
     /**
@@ -440,12 +227,7 @@ export class Bot {
      * @param pair
      */
     private async manageOpenOrders(pair: string) {
-        this.accountInfo = await binanceClient.futuresAccountInfo();
-        const position = this.accountInfo.positions.find(
-            (position) => position.symbol === pair
-        );
-        const hasOpenPosition = Number(position.positionAmt) !== 0;
-
+        const hasOpenPosition = false;
         if (this.hasOpenPosition[pair] && !hasOpenPosition) {
             this.hasOpenPosition[pair] = false;
             this.closeOpenOrders(pair);
@@ -460,7 +242,7 @@ export class Bot {
     private closeOpenOrders(pair: string) {
         return new Promise<void>((resolve, reject) => {
             binanceClient
-                .futuresCancelAllOpenOrders({symbol: pair})
+                .cancelOpenOrders({symbol: pair})
                 .then(() => {
                     log(`Close all open orders for the pair ${pair}`);
                     resolve();
