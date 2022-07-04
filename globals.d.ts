@@ -6,7 +6,7 @@ interface StrategyConfig {
   asset: string;
   base: string;
   loopInterval: CandleChartInterval; // The speed of the main loop, the robot look up the market every this interval
-  indicatorIntervals: CandleChartInterval[]; // The intervals/time frames needed for the strategy
+  indicatorIntervals: CandleChartInterval; // The intervals/time frames needed for the strategy
   leverage?: number;
   risk: number; // % of total balance to risk in a trade
   allowPyramiding?: boolean; // Allow cumulative longs/shorts to average the entry price

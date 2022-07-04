@@ -22,24 +22,6 @@ const assets = [
   'NEAR',
   'GALA',
   'SAND',
-  'GRT',
-  'CHZ',
-  'ENJ',
-  'XRP',
-  'ADA',
-  'LINK',
-  'MANA',
-  'DOT',
-  'MATIC',
-  'CRV',
-  'ALGO',
-  'DOGE',
-  'CAKE',
-  'ROSE',
-  'XTZ',
-  'EGLD',
-  'VET',
-  'LUNA',
 ];
 
 export const hyperParameters = {};
@@ -79,7 +61,7 @@ export const config: AbstractStrategyConfig = (parameters) =>
         ],
       }),
     buyStrategy: (candles) =>
-      Basics.RELOAD_ZONE.isBuySignal(candles[CandleChartInterval.ONE_WEEK], {
+      Basics.RELOAD_ZONE.isBuySignal(candles[CandleChartInterval.ONE_HOUR], {
         trend: Fibonacci.FibonacciTrend.UP,
       }),
     sellStrategy: (candles: CandleData[]) => false,
