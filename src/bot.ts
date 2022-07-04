@@ -55,7 +55,7 @@ export class Bot {
      */
     public async run() {
         log(
-            '====================== 💵 BINANCE BOT TRADING 💵 ======================'
+            '=========== 💵 BINANCE BOT TRADING 💵 ==========='
         );
 
         // Get the exchange info
@@ -101,11 +101,10 @@ export class Bot {
                             );
 
                             // Update the current balance
-                            this.currentBalance = Number(
-                                (await binanceClient.futuresAccountBalance()).find(
-                                    (b) => b.asset === this.strategyConfigs[0].base
-                                ).balance
-                            );
+                            let accountInfo = await binanceClient.accountInfo()
+                            this.currentBalance = Number(accountInfo.balances.find(
+                                (b) => b.asset === this.strategyConfigs[0].base
+                            ).free)
                         });
 
                         // Day change ?

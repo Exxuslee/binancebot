@@ -31,8 +31,8 @@ export const config: AbstractStrategyConfig = (parameters) =>
     asset,
     base: 'USDT',
     risk: 0.01,
-    loopInterval: CandleChartInterval.ONE_HOUR,
-    indicatorIntervals: [CandleChartInterval.ONE_WEEK],
+    loopInterval: CandleChartInterval.ONE_MINUTE,
+    indicatorIntervals: [CandleChartInterval.FIVE_MINUTES],
     trendFilter: (candles) => 1, // Take only long position, supposing we are in up trend on long term
     riskManagement: getPositionSizeByPercent,
     exitStrategy: (price, candles, pricePrecision, side, exchangeInfo) =>
