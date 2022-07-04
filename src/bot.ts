@@ -7,7 +7,7 @@ import {Telegram} from './telegram';
 import dayjs from 'dayjs';
 import {getPricePrecision, getQuantityPrecision} from './utils/currencyInfo';
 import {Balance} from "./Balance";
-import {sendDailyResult} from "./telegram/message";
+import {sendDailyResult, sendMonthResult} from "./telegram/message";
 
 
 // ====================================================================== //
@@ -53,10 +53,11 @@ export class Bot {
 
 
         });
-        await this.telegram.sendTelegramMessage("Run bot")
+        this.telegram = new Telegram()
+        this.balance = new Balance()
         await this.balance.init()
-        await this.telegram.sendTelegramMessage(this.balance.bDay("BTC").toString())
         sendDailyResult(this.telegram, this.balance)
+        sendMonthResult(this.telegram, this.balance)
     }
 
     /**

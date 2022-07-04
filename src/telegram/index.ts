@@ -13,7 +13,7 @@ export class Telegram {
         return new Promise<TelegramBot.Message>((resolve, reject) => {
             telegramBot.sendMessage(CHAT_ID, message, {parse_mode: 'HTML'})
                 .then((messageInfo) => {
-                    log(`Telegram message send successfully`);
+                    log(`Telegram send: ${message}`);
                     resolve(messageInfo);
                 }).catch(reject);
         });
