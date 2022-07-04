@@ -43,31 +43,6 @@ export class Bot {
      * Prepare the account
      */
     public prepare() {
-        // Set the margin type and initial leverage for the futures
-        this.strategyConfigs.forEach((tradeConfig) => {
-            const pair = tradeConfig.asset + tradeConfig.base;
-
-            binanceClient
-                .futuresLeverage({
-                    symbol: pair,
-                    leverage: tradeConfig.leverage || 1,
-                })
-                .then(() =>
-                    log(`Leverage for ${pair} is set to ${tradeConfig.leverage || 1}`)
-                )
-                .catch(error);
-
-            binanceClient
-                .futuresMarginType({
-                    symbol: pair,
-                    marginType: 'ISOLATED',
-                })
-                .catch(error);
-
-            // No position is open at the launch
-            this.hasOpenPosition[pair] = false;
-        });
-
         // Initialize the counters
         this.strategyConfigs.forEach(({asset, base, maxTradeDuration}) => {
             if (maxTradeDuration)
@@ -94,13 +69,14 @@ export class Bot {
         );
         this.lastMonthBalance = this.currentBalance;
         this.lastDayBalance = this.currentBalance;
+        console.log(this.currentBalance)
 
         // Main
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;
             log(`The bot trades the pair ${pair}`);
 
-            binanceClient.ws.futuresCandles(
+            binanceClient.ws.candles(
                 pair,
                 strategyConfig.loopInterval,
                 (candle) => {

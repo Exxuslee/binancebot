@@ -4,10 +4,8 @@
   "description": "binance bot",
   "main": "src/index.ts",
   "scripts": {
-    "start": "set NODE_ENV=production nodemon ./build/server.js",
-    "build": "set NODE_ENV=production tsc",
-    "dev": "nodemon ./build/server.js",
-    "build:dev": "set NODE_ENV=development tsc",
+    "start": "nodemon ./build/server.js",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

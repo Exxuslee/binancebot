@@ -15,7 +15,7 @@ initializeDayJsPlugins();
 export const logger = initLogger();
 export const telegramBot = initTelegramBot();
 export const BotConfig = initJSonConfig();
-export const binanceClient = initBinanceClient(process.env.NODE_ENV as any);
+export const binanceClient = initBinanceClient();
 export const { AbstractStrategy, StrategyConfig, StrategyHyperParameters } =
   loadStrategyConfig(BotConfig['strategy_config_file_name']);
 
