@@ -11,7 +11,7 @@ const defaultOptions: Options = {
 };
 
 export const isBuySignal = (
-  candles: CandleData[],
+  candles: CandleTime[],
   options = defaultOptions
 ) => {
   const levels = Fibonacci.calculate(candles, {
@@ -32,7 +32,7 @@ export const isBuySignal = (
 };
 
 export const isSellSignal = (
-  candles: CandleData[],
+  candles: CandleTime[],
   options = defaultOptions
 ) => {
   const levels = Fibonacci.calculate(candles, {

@@ -1,8 +1,8 @@
 import {
   getQuantityPrecision,
   getMinOrderQuantity,
-} from '../utils/currencyInfo';
-import { decimalCeil } from '../utils/math';
+} from '../../utils/currencyInfo';
+import { decimalCeil } from '../../utils/math';
 
 /**
  * Calculate the quantity of crypto to buy according to your available balance,

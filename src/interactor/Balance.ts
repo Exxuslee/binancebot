@@ -1,4 +1,4 @@
-import {binanceClient} from "./init";
+import {binanceClient} from "../init";
 import {AssetBalance} from "binance-api-node";
 
 

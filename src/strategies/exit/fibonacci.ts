@@ -41,7 +41,7 @@ function getPriceFromFibonacciLevels(
 }
 
 const strategy = (
-  candles: CandleData[],
+  candles: CandleTime[],
   pricePrecision: number,
   side: OrderSide,
   exchangeInfo: ExchangeInfo,

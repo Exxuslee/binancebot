@@ -2,7 +2,7 @@ import { CandleChartInterval } from 'binance-api-node';
 import { atrExitStrategy } from '../strategies/exit';
 import { Basics } from '../strategies/entry';
 import { threeEma } from '../strategies/trend';
-import { getPositionSizeByRisk } from '../strategies/riskManagement';
+import { getPositionSizeByRisk } from '../strategies/risk';
 import { MAX_LOADED_CANDLE_LENGTH_API } from '../init';
 
 export const hyperParameters: HyperParameters = {

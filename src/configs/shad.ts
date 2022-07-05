@@ -1,8 +1,8 @@
 import { CandleChartInterval } from 'binance-api-node';
 import { Basics } from '../strategies/entry';
-import { Fibonacci } from '../indicators';
 import { basicExitStrategy } from '../strategies/exit';
-import { getPositionSizeByPercent } from '../strategies/riskManagement';
+import { getPositionSizeByPercent } from '../strategies/risk';
+import {MAX_LOADED_CANDLE_LENGTH_API} from "../init";
 
 // =========================== PRESETS ================================== //
 
@@ -60,9 +60,11 @@ export const config: AbstractStrategyConfig = (parameters) =>
           },
         ],
       }),
-    buyStrategy: (candles) =>
-      Basics.RELOAD_ZONE.isBuySignal(candles[CandleChartInterval.ONE_HOUR], {
-        trend: Fibonacci.FibonacciTrend.UP,
-      }),
-    sellStrategy: (candles: CandleData[]) => false,
+      buyStrategy: (candles) =>
+          Basics.STOCHASTIC_RSI.isBuySignal(
+              candles[CandleChartInterval.FIFTEEN_MINUTES].slice(
+                  -MAX_LOADED_CANDLE_LENGTH_API
+              )
+          ),
+    sellStrategy: (candles: CandleTime[]) => false,
   }));

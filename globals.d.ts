@@ -23,10 +23,10 @@ interface StrategyConfig {
 }
 
 type CandlesDataMultiTimeFrames = {
-  [timeFrame: CandleChartInterval]: CandleData[];
+  [timeFrame: CandleChartInterval]: CandleTime[];
 };
 
-interface CandleData {
+interface Candle {
   symbol: string;
   open: number;
   high: number;
@@ -35,7 +35,14 @@ interface CandleData {
   volume: number;
   openTime: Date;
   closeTime: Date;
+}
+
+interface CandleTime extends Candle{
   interval: CandleChartInterval;
+}
+
+interface CandleRage extends Candle{
+  rage: number;
 }
 
 type HyperParameters = {

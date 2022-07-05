@@ -1,7 +1,7 @@
 import { CandleChartInterval } from 'binance-api-node';
 import { highLowExitStrategy } from '../strategies/exit';
 import { Basics } from '../strategies/entry';
-import { getPositionSizeByRisk } from '../strategies/riskManagement';
+import { getPositionSizeByRisk } from '../strategies/risk';
 
 export const hyperParameters = {
   takeProfitRatio: { value: 3 },

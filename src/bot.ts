@@ -6,7 +6,7 @@ import {isOnTradingSession} from './utils/tradingSession';
 import {Telegram} from './telegram';
 import dayjs from 'dayjs';
 import {getPricePrecision, getQuantityPrecision} from './utils/currencyInfo';
-import {Balance} from "./Balance";
+import {Balance} from "./interactor/Balance";
 import {sendDailyResult, sendMonthResult} from "./telegram/message";
 
 
@@ -149,33 +149,5 @@ export class Bot {
         });
 
 
-    }
-
-    /**
-     * Check if a position has been closed
-     * @param pair
-     */
-    private async manageOpenOrders(pair: string) {
-        const hasOpenPosition = false;
-        if (this.hasOpenPosition[pair] && !hasOpenPosition) {
-            this.hasOpenPosition[pair] = false;
-            await this.closeOpenOrders(pair);
-        }
-    }
-
-    /**
-     *  Close all the open orders for a given symbol
-     * @param pair
-     */
-    private closeOpenOrders(pair: string) {
-        return new Promise<void>((resolve, reject) => {
-            binanceClient
-                .cancelOpenOrders({symbol: pair})
-                .then(() => {
-                    log(`Close all open orders for the pair ${pair}`);
-                    resolve();
-                })
-                .catch(reject);
-        });
     }
 }

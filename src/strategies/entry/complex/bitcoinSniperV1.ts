@@ -109,7 +109,7 @@ const defaultOptions: Options = {
 };
 
 const adxCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     adxType = defaultOptions.adxType,
     adxLength = defaultOptions.adxLength,
@@ -137,7 +137,7 @@ const adxCondition = (
 };
 
 const psarCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   { psarStep = defaultOptions.psarStep, psarMax = defaultOptions.psarMax }
 ) => {
   let psar = PSAR.calculate({
@@ -153,7 +153,7 @@ const psarCondition = (
 };
 
 const supportResistanceCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     leftBars = defaultOptions.supportResistanceLeftBars,
     rightBars = defaultOptions.supportResistanceRightBars,
@@ -174,7 +174,7 @@ const supportResistanceCondition = (
 };
 
 const volumeCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     volumeLength = defaultOptions.volumeLength,
     volumeMultiplier = defaultOptions.volumeMultiplier,
@@ -189,7 +189,7 @@ const volumeCondition = (
 };
 
 const rangeFilterCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     rangeFilterSourceType = defaultOptions.rangeFilterSourceType,
     rangeFilterPeriod = defaultOptions.rangeFilterPeriod,
@@ -213,7 +213,7 @@ const rangeFilterCondition = (
 };
 
 const macdCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     fastLength = defaultOptions.macdFastLength,
     slowLength = defaultOptions.macdSlowLength,
@@ -236,7 +236,7 @@ const macdCondition = (
 };
 
 const rsiCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     period = defaultOptions.rsiLength,
     sourceType = defaultOptions.rsiSourceType,
@@ -248,7 +248,7 @@ const rsiCondition = (
 };
 
 const momentumCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     tmoLength = defaultOptions.momentumTmoLength,
     smoothLength = defaultOptions.momentumSmoothLength,
@@ -265,7 +265,7 @@ const momentumCondition = (
 };
 
 const maCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   { length = defaultOptions.maLength, sourceType = defaultOptions.maSourceType }
 ) => {
   let vwma = VWMA.calculate(candles, { period: length, sourceType }).slice(-2);
@@ -275,7 +275,7 @@ const maCondition = (
 };
 
 const jmaCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     length = defaultOptions.jmaLength,
     sourceType = defaultOptions.jmaSourceType,
@@ -289,7 +289,7 @@ const jmaCondition = (
 };
 
 const scalpingCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     emaScalpingLength = defaultOptions.emaScalpingLength,
     useHeikinAshiCandles = defaultOptions.scalpingUseHeikinAshiCandles,
@@ -314,7 +314,7 @@ const scalpingCondition = (
 };
 
 const rmiCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     rmiLength = defaultOptions.rmiLength,
     rmiMomentumLength = defaultOptions.rmiMomentumLength,
@@ -335,7 +335,7 @@ const rmiCondition = (
 };
 
 const bollingerBandsCondition = (
-  candles: CandleData[],
+  candles: CandleTime[],
   {
     bollingerBandsLength = defaultOptions.bollingerBandsLength,
     bollingerBandsSourceType = defaultOptions.bollingerBandsSourceType,
@@ -390,7 +390,7 @@ const bollingerBandsCondition = (
   return { bbLongSignal, bbShortSignal };
 };
 
-export const isBuySignal = (candles: CandleData[], options?: Options) => {
+export const isBuySignal = (candles: CandleTime[], options?: Options) => {
   options = { ...defaultOptions, ...options };
 
   let { adxLongCond } = adxCondition(candles, {
@@ -498,7 +498,7 @@ export const isBuySignal = (candles: CandleData[], options?: Options) => {
   return longCondition1 || longCondition2 || longCondition3 || longCondition4;
 };
 
-export const isSellSignal = (candles: CandleData[], options?: Options) => {
+export const isSellSignal = (candles: CandleTime[], options?: Options) => {
   options = { ...defaultOptions, ...options };
 
   let { adxShortCond } = adxCondition(candles, {
