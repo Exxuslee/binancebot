@@ -42,6 +42,9 @@ interface CandleTime extends Candle{
 }
 
 interface CandleRage extends Candle{
+  isBuyerMaker: boolean,
+  trades: number,
+  aggTrades: number
   rage: number;
 }
 

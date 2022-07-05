@@ -15,12 +15,17 @@ export class Balance {
         this.lastDayBalance = accountInfo.balances
     }
 
+    async update() {
+        // Store account information to local
+        let accountInfo = await binanceClient.accountInfo()
+        this.currentBalance = accountInfo.balances
+    }
+
     bCurrent(base: String) {
         return Number(this.currentBalance.find(value => {
             if (value.asset === base) return value.asset;
         }).free)
     }
-
 
     bDay(base: String) {
         return Number(this.lastDayBalance.find(value => {
