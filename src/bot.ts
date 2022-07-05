@@ -31,12 +31,12 @@ export class Bot {
         this.strategyConfigs.forEach((strategyConfig) =>
             pairs.push(strategyConfig.asset + strategyConfig.base))
         binanceClient.ws.aggTrades(pairs, trade => {
-                console.log(trade)
+            console.log(trade)
         })
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;
             log(`The bot trades the pair ${pair}`);
-        });
 
+        });
     }
 }
