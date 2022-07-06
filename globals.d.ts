@@ -37,6 +37,12 @@ interface Candle {
   closeTime: Date;
 }
 
+interface PairBalance {
+  b1: number;
+  b2: number;
+  runningBase: number
+}
+
 interface CandleTime extends Candle{
   interval: CandleChartInterval;
 }
