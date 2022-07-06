@@ -5,6 +5,7 @@ import Emittery from "emittery";
 export class Candles {
     private emitter: Emittery;
     private candleRage: CandleRage[] = []
+    private currentRage: CandleRage
     private readonly rage: number
 
     constructor(emitter: Emittery, rage: number) {
@@ -13,60 +14,58 @@ export class Candles {
     }
 
     update(aggTrade: AggregatedTrade) {
-        if (this.candleRage === undefined || this.candleRage.length === 0) this.init(aggTrade)
+        if (this.currentRage === undefined) this.init(aggTrade)
         let current = Number(aggTrade.price)
 
-
-        if (current > this.candleRage[0].low + this.rage) {
+        if (current > this.currentRage.low + this.currentRage.rage) {
             // new candle
-            this.candleRage[0].closeTime = new Date(aggTrade.timestamp)
-            this.candleRage[0].close = this.candleRage[0].low - this.rage
-            this.candleRage[0].isBuyerMaker = false
-            this.emitter.emit(aggTrade.symbol, this.candleRage.length)
-            this.init(aggTrade)
-            if (this.candleRage.length > 64) this.candleRage.pop()
-        } else if (current < this.candleRage[0].high - this.rage) {
+            this.currentRage.close = this.currentRage.low + this.currentRage.rage
+            this.currentRage.isBuyerMaker = false
+            this.finish(aggTrade)
+        } else if (current < this.currentRage.high - this.currentRage.rage) {
             // new candle
-            this.candleRage[0].closeTime = new Date(aggTrade.timestamp)
-            this.candleRage[0].close = this.candleRage[0].low + this.rage
-            this.candleRage[0].isBuyerMaker = true
-            this.emitter.emit(aggTrade.symbol, this.candleRage.length)
-            this.init(aggTrade)
-            if (this.candleRage.length > 64) this.candleRage.pop()
+            this.currentRage.close = this.currentRage.high - this.currentRage.rage
+            this.currentRage.isBuyerMaker = true
+            this.finish(aggTrade)
         } else {
             // old candle
-            this.candleRage[0].aggTrades++
-            this.candleRage[0].trades += aggTrade.lastId - aggTrade.lastId + 1
-            if (current > this.candleRage[0].high) this.candleRage[0].high = current
-            if (current < this.candleRage[0].low) this.candleRage[0].low = current
-            this.candleRage[0].volume += Number(aggTrade.quantity)
-            this.candleRage[0].close = current
-            this.candleRage[0].isBuyerMaker = this.candleRage[0].open > current;
+            this.currentRage.aggTrades++
+            this.currentRage.trades += aggTrade.lastId - aggTrade.lastId + 1
+            if (current > this.currentRage.high) this.currentRage.high = current
+            if (current < this.currentRage.low) this.currentRage.low = current
+            this.currentRage.volume += Number(aggTrade.quantity)
+            this.currentRage.close = current
+            this.currentRage.isBuyerMaker = this.currentRage.open > current;
         }
-
-
-    }
-
-
-    trend(): CandleRage[] {
-        return this.candleRage;
     }
 
     private init(aggTrade: AggregatedTrade) {
-        this.candleRage.unshift({
-            aggTrades: 0,
-            closeTime: undefined,
-            isBuyerMaker: false,
-            rage: this.rage,
-            trades: 0,
+        let percent = Number(aggTrade.price) * this.rage / 100
+
+        this.currentRage = {
             symbol: aggTrade.symbol,
+            openTime: new Date(aggTrade.timestamp),
+            closeTime: undefined,
+            trades: 0,
+            aggTrades: 0,
+            rage: percent,
             open: Number(aggTrade.price),
             high: Number(aggTrade.price),
             low: Number(aggTrade.price),
             close: Number(aggTrade.price),
+            isBuyerMaker: false,
             volume: 0,
-            openTime: new Date(aggTrade.timestamp),
-        })
+        }
+    }
+
+    private finish(aggTrade) {
+        this.currentRage.closeTime = new Date(aggTrade.timestamp)
+        this.candleRage.unshift(this.currentRage)
+        this.init(aggTrade)
+        if (this.candleRage.length > 21) {
+            this.emitter.emit(aggTrade.symbol, this.candleRage)
+            this.candleRage.pop()
+        }
     }
 }
 
