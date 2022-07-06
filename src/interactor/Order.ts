@@ -1,6 +1,6 @@
 import {binanceClient} from "../init";
 import {log} from "../utils/log";
-import {Binance, OrderType} from "binance-api-node";
+import {Binance, OrderSide, OrderType} from "binance-api-node";
 
 export class Order {
     private hasLongPosition = false;
@@ -35,7 +35,8 @@ export class Order {
         quantity: string,
         orderSide,
         type,
-        price?: number) {
+        price?: number,
+        stopLoss?: number) {
         if (type == OrderType.MARKET)
             await binanceClient.order({
                 side: orderSide,
