@@ -45,7 +45,7 @@ interface CandleRage extends Candle{
   isBuyerMaker: boolean,
   trades: number,
   aggTrades: number
-  rage: number;
+  rage: Number;
 }
 
 type HyperParameters = {

@@ -42,7 +42,7 @@ export class Bot {
             const pair = strategyConfig.asset + strategyConfig.base;
             log(`The bot trades the pair ${pair}`);
 
-            let candles = new Candles(emitter)
+            let candles = new Candles(emitter, strategyConfig.leverage)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => {
                 candles.update(AggregatedTrade)
             })
