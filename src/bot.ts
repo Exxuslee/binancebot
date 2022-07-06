@@ -47,7 +47,7 @@ export class Bot {
                 candles.update(AggregatedTrade)
             })
             emitter.on(pair, data => {
-                console.log(data)
+                console.log(pair, data)
                 //trade(strategyConfig, data)
             });
         });
