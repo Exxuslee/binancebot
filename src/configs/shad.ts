@@ -1,8 +1,8 @@
 import {CandleChartInterval} from 'binance-api-node';
-import {Basics} from '../strategies/entry';
 import {basicExitStrategy} from '../strategies/exit';
 import {getPositionSizeByPercent} from '../strategies/risk';
 import {MAX_LOADED_CANDLE_LENGTH_API} from "../init";
+import {STOCHASTIC_RSI} from "../strategies/entry";
 
 // =========================== PRESETS ================================== //
 
@@ -25,7 +25,7 @@ export const config: AbstractStrategyConfig = (parameters) =>
         asset,
         base: 'USDT',
         risk: 0.01,
-        leverage: 0.1,
+        leverage: 0.05,
         loopInterval: CandleChartInterval.ONE_MINUTE,
         indicatorIntervals: [CandleChartInterval.FIVE_MINUTES],
         trendFilter: (candles) => 1, // Take only long position, supposing we are in up trend on long term
@@ -56,7 +56,7 @@ export const config: AbstractStrategyConfig = (parameters) =>
                 ],
             }),
         buyStrategy: (candles) =>
-            Basics.STOCHASTIC_RSI.isBuySignal(
+            STOCHASTIC_RSI.isBuySignal(
                 candles[CandleChartInterval.FIFTEEN_MINUTES].slice(
                     -MAX_LOADED_CANDLE_LENGTH_API
                 )

@@ -1,5 +1,5 @@
 import { CrossUp, CrossDown } from 'technicalindicators';
-import { MACD } from '../../../indicators';
+import { MACD } from '../../indicators';
 
 interface Options {
   macdFastPeriod?: number;

@@ -1,5 +1,5 @@
 import { CrossUp, CrossDown } from 'technicalindicators';
-import { SMA, EMA, WMA, WEMA } from '../../../indicators';
+import { SMA, EMA, WMA, WEMA } from '../../indicators';
 
 interface Options {
   maPeriod?: number;
@@ -7,7 +7,7 @@ interface Options {
 }
 
 const defaultOptions: Options = {
-  maPeriod: 20,
+  maPeriod: 21,
   maType: 'SMA',
 };
 

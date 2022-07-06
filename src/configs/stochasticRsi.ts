@@ -1,9 +1,9 @@
 import { CandleChartInterval } from 'binance-api-node';
 import { atrExitStrategy } from '../strategies/exit';
-import { Basics } from '../strategies/entry';
 import { threeEma } from '../strategies/trend';
 import { getPositionSizeByRisk } from '../strategies/risk';
 import { MAX_LOADED_CANDLE_LENGTH_API } from '../init';
+import {STOCHASTIC_RSI} from "../strategies/entry";
 
 export const hyperParameters: HyperParameters = {
   takeProfitAtrRatio: { value: 2, optimization: [1, 5] },
@@ -52,13 +52,13 @@ export const config: AbstractStrategyConfig = (parameters) => [
         }
       ),
     buyStrategy: (candles) =>
-      Basics.STOCHASTIC_RSI.isBuySignal(
+      STOCHASTIC_RSI.isBuySignal(
         candles[CandleChartInterval.FIFTEEN_MINUTES].slice(
           -MAX_LOADED_CANDLE_LENGTH_API
         )
       ),
     sellStrategy: (candles) =>
-      Basics.STOCHASTIC_RSI.isSellSignal(
+      STOCHASTIC_RSI.isSellSignal(
         candles[CandleChartInterval.FIFTEEN_MINUTES].slice(
           -MAX_LOADED_CANDLE_LENGTH_API
         )

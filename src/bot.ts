@@ -36,14 +36,13 @@ export class Bot {
             log(`The bot trades the pair ${pair}`);
 
             let candles = new Candles(emitter, strategyConfig.leverage)
+            let currentPrice: number
             binanceClient.ws.aggTrades(pair, AggregatedTrade => {
+                currentPrice = Number(AggregatedTrade.price)
                 candles.update(AggregatedTrade)
             })
             emitter.on(pair, data => {
-                let temp = ''
-                data.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
-                console.log(pair, temp)
-                if (data.length > 21) trade(strategyConfig, data)
+                trade(strategyConfig, data.data, data.currentPrice)
             });
         });
     }

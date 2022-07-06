@@ -63,7 +63,10 @@ export class Candles {
         this.candleRage.unshift(this.currentRage)
         this.init(aggTrade)
         if (this.candleRage.length > 21) {
-            this.emitter.emit(aggTrade.symbol, this.candleRage)
+            this.emitter.emit(aggTrade.symbol, {
+                data: this.candleRage,
+                currentPrice: aggTrade.price
+            })
             this.candleRage.pop()
         }
     }

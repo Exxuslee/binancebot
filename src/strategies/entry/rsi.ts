@@ -1,4 +1,4 @@
-import { RSI } from '../../../indicators';
+import { RSI } from '../../indicators';
 
 interface Options {
   rsiPeriod?: number;

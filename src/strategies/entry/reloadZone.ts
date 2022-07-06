@@ -1,4 +1,4 @@
-import * as Fibonacci from '../../../indicators/utils/fibonacci';
+import * as Fibonacci from '../../indicators/utils/fibonacci';
 
 interface Options {
   period?: number;

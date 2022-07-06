@@ -11,7 +11,8 @@ import {OrderSide} from "binance-api-node";
  */
 export async function trade(
     strategyConfig: StrategyConfig,
-    candles: CandleRage[]
+    candles: CandleRage[],
+    currentPrice: number
 ) {
     const {
         asset,
@@ -31,7 +32,6 @@ export async function trade(
         maxTradeDuration,
     } = strategyConfig;
     const pair = asset + base;
-    const currentPrice = candles[0].close
 
     // Update the account info
     this.accountInfo = await binanceClient.accountInfo();

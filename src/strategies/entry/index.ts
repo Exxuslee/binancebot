@@ -1,21 +1,15 @@
-import * as RSI from './basics/rsi';
-import * as MA from './basics/ma';
-import * as MACD from './basics/macd';
-import * as MA_CROSS from './basics/maCross';
-import * as RELOAD_ZONE from './basics/reloadZone';
-import * as STOCHASTIC_RSI from './basics/stochasticRsi';
+import * as RSI from './rsi';
+import * as MA from './ma';
+import * as MACD from './macd';
+import * as MA_CROSS from './maCross';
+import * as RELOAD_ZONE from './reloadZone';
+import * as STOCHASTIC_RSI from './stochasticRsi';
 
-export const Basics = {
+export {
   RSI,
   MA,
   MACD,
   MA_CROSS,
   RELOAD_ZONE,
   STOCHASTIC_RSI,
-};
-
-import * as BITCOIN_SNIPER_V1 from './complex/bitcoinSniperV1';
-
-export const Complex = {
-  BITCOIN_SNIPER_V1,
 };

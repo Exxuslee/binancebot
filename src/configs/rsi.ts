@@ -1,7 +1,7 @@
 import { CandleChartInterval } from 'binance-api-node';
 import { highLowExitStrategy } from '../strategies/exit';
-import { Basics } from '../strategies/entry';
 import { getPositionSizeByRisk } from '../strategies/risk';
+import {RSI} from "../strategies/entry";
 
 export const hyperParameters = {
   takeProfitRatio: { value: 3 },
@@ -33,12 +33,12 @@ export const config: AbstractStrategyConfig = (parameters) => [
         }
       ),
     buyStrategy: (candles) =>
-      Basics.RSI.isBuySignal(candles[CandleChartInterval.ONE_HOUR], {
+      RSI.isBuySignal(candles[CandleChartInterval.ONE_HOUR], {
         rsiPeriod: parameters.rsiPeriod.value,
         rsiOversold: parameters.rsiOversold.value,
       }),
     sellStrategy: (candles) =>
-      Basics.RSI.isSellSignal(candles[CandleChartInterval.ONE_HOUR], {
+      RSI.isSellSignal(candles[CandleChartInterval.ONE_HOUR], {
         rsiPeriod: parameters.rsiPeriod.value,
         rsiOverbought: parameters.rsiOverbought.value,
       }),
