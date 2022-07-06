@@ -15,7 +15,6 @@ const assets = [
     'BTC',
     'ETH',
     'BNB',
-    'SOL',
 ];
 
 export const hyperParameters = {};

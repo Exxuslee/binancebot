@@ -1,5 +1,8 @@
 import {binanceClient} from "../init";
 import {AssetBalance} from "binance-api-node";
+import chalk from "chalk";
+import dayjs from "dayjs";
+import {log} from "../utils/log";
 
 
 export class Balance {
@@ -22,19 +25,29 @@ export class Balance {
     }
 
     bCurrent(base: String) {
-        return Number(this.currentBalance.find(value => {
-            if (value.asset === base) return value.asset;
-        }).free)
+        let balance = 0
+        try {
+            balance = Number(this.currentBalance.find(value => {
+                if (value.asset === base) return value.asset;
+            }).free)
+        } catch (e) {
+            log(`No balance ${base}`)
+        }
+
+        return balance ? balance : 0
     }
 
     bDay(base: String) {
-        return Number(this.lastDayBalance.find(value => {
+        let balance = Number(this.lastDayBalance.find(value => {
             if (value.asset === base) return value.asset;
         }).free)
+        return balance ? balance : 0
     }
+
     bMonth(base: String) {
-        return Number(this.lastMonthBalance.find(value => {
+        let balance = Number(this.lastMonthBalance.find(value => {
             if (value.asset === base) return value.asset;
         }).free)
+        return balance ? balance : 0
     }
 }

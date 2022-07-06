@@ -33,6 +33,7 @@ export class Bot {
         this.exchangeInfo = await binanceClient.exchangeInfo();
 
         const emitter = new Emittery();
+        await this.balance.init()
 
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;

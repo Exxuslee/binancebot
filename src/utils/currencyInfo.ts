@@ -77,8 +77,8 @@ export function getPricePrecision(pair: string, exchangeInfo: ExchangeInfo) {
  * Get the tick size for a symbol
  */
 export function getTickSize(pair: string, exchangeInfo: ExchangeInfo) {
+  console.log(exchangeInfo.symbols[2].symbol[2])
   const symbol = exchangeInfo.symbols.find((symbol) => symbol.symbol === pair);
   const filter = symbol.filters.find((f) => f.filterType === 'PRICE_FILTER');
-  // @ts-ignore
-  return Number(filter.tickSize);
+  return Number("tickSize" in filter ? filter.tickSize :'0.01000000');
 }
