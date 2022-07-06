@@ -37,18 +37,18 @@ export class Bot {
         // binanceClient.ws.aggTrades(pairs, trade => {
         //     console.log(trade)
         // })
-
+        const emitter = new Emittery();
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;
             log(`The bot trades the pair ${pair}`);
 
-            const emitter = new Emittery();
             let candles = new Candles(emitter)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => {
                 candles.update(AggregatedTrade)
             })
-            emitter.on('new candle', data => {
-                trade(strategyConfig, candles.trend())
+            emitter.on(pair, data => {
+                console.log(data)
+                //trade(strategyConfig, data)
             });
         });
     }

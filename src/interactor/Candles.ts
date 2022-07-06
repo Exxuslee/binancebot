@@ -3,15 +3,15 @@ import Emittery from "emittery";
 
 export class Candles {
     private emitter: Emittery;
-    private candleRage: CandleRage[]
+    private candleRage: CandleRage[] = []
 
     constructor(emitter: Emittery) {
         this.emitter = emitter
+
     }
 
     update(aggregatedTrade: AggregatedTrade) {
-        console.log(aggregatedTrade)
-        if (this.candleRage.length === null) this.candleRage.push({
+        if (this.candleRage === undefined || this.candleRage.length === 0) this.candleRage.push({
             aggTrades: 0,
             closeTime: undefined,
             isBuyerMaker: false,
@@ -26,6 +26,8 @@ export class Candles {
             openTime: new Date(aggregatedTrade.timestamp),
         })
 
+
+        this.emitter.emit(aggregatedTrade.symbol, this.candleRage.length)
     }
 
 
@@ -33,5 +35,4 @@ export class Candles {
         return this.candleRage;
     }
 }
-
 
