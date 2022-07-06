@@ -4,27 +4,28 @@ import Emittery from "emittery";
 export class Candles {
     private emitter: Emittery;
     private candleRage: CandleRage[]
-    constructor(  emitter: Emittery  ) {
+
+    constructor(emitter: Emittery) {
         this.emitter = emitter
     }
 
     update(aggregatedTrade: AggregatedTrade) {
         console.log(aggregatedTrade)
-        let asd: CandleTime[]
-        let candleTime: CandleTime
-        candleTime = ({
-            symbol: "string",
-            open: 123,
-            high: 123,
-            low: 123,
-            close: 123,
-            volume: 123,
-            openTime: Date(),
-            closeTime: Date(),
-
+        if (this.candleRage.length === null) this.candleRage.push({
+            aggTrades: 0,
+            closeTime: undefined,
+            isBuyerMaker: false,
+            rage: 0,
+            trades: 0,
+            symbol: aggregatedTrade.symbol,
+            open: Number(aggregatedTrade.price),
+            high: Number(aggregatedTrade.price),
+            low: Number(aggregatedTrade.price),
+            close: Number(aggregatedTrade.price),
+            volume: Number(aggregatedTrade.quantity),
+            openTime: new Date(aggregatedTrade.timestamp),
         })
-        asd[0] = candleTime
-        this.myCallback(asd); //calling callback
+
     }
 
 
