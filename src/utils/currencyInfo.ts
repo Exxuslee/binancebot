@@ -1,5 +1,6 @@
 import { ExchangeInfo } from 'binance-api-node';
 import { decimalCeil } from './math';
+import {log} from "./log";
 
 /**
  * @see https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#lot_size
@@ -57,28 +58,30 @@ export function getLotSizeQuantityRules(
  */
 export function getQuantityPrecision(pair: string, exchangeInfo: ExchangeInfo) {
   const symbol = exchangeInfo.symbols.find((symbol) => symbol.symbol === pair);
-  // @ts-ignore
-  return symbol.quantityPrecision as number;
+  return symbol.quotePrecision;
 }
 
 /**
  * Get the maximal number of decimals for a pair quantity
  */
 export function getPricePrecision(pair: string, exchangeInfo: ExchangeInfo) {
-  const tickSize = getTickSize(pair, exchangeInfo);
-  if (tickSize.toString().split('.').length > 0) {
-    return tickSize.toString().split('.')[1].length;
-  } else {
-    return 0;
-  }
+  const symbol = exchangeInfo.symbols.find((symbol) => symbol.symbol === pair);
+  return symbol.baseAssetPrecision;
 }
 
 /**
  * Get the tick size for a symbol
  */
 export function getTickSize(pair: string, exchangeInfo: ExchangeInfo) {
-  console.log(exchangeInfo.symbols[2].symbol[2])
+  let tickSize = 0.01000000
   const symbol = exchangeInfo.symbols.find((symbol) => symbol.symbol === pair);
-  const filter = symbol.filters.find((f) => f.filterType === 'PRICE_FILTER');
-  return Number("tickSize" in filter ? filter.tickSize :'0.01000000');
+
+  try {
+    const filter = symbol.filters.find((f) => f.filterType === 'PRICE_FILTER');
+    // @ts-ignore
+    tickSize = Number(filter.tickSize)
+  } catch (e){
+    log(`no tickSize in ${symbol}`)
+  }
+  return tickSize;
 }

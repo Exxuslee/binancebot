@@ -22,7 +22,7 @@ export const hyperParameters = {};
 export const config: AbstractStrategyConfig = (parameters) =>
     assets.map((asset) => ({
         asset,
-        base: 'USDT',
+        base: 'BUSD',
         risk: 0.01,
         leverage: 0.05,
         loopInterval: CandleChartInterval.ONE_MINUTE,
