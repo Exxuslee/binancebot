@@ -5,7 +5,6 @@ import {Telegram} from './telegram';
 import dayjs from 'dayjs';
 import {Balance} from "./interactor/Balance";
 import {Candles} from "./interactor/Candles";
-import {trade} from "./interactor/Trade";
 import Emittery from "emittery";
 
 export class Bot {
@@ -47,7 +46,9 @@ export class Bot {
                 candles.update(AggregatedTrade)
             })
             emitter.on(pair, data => {
-                console.log(pair, data)
+                let temp = ''
+                data.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
+                console.log(pair, temp)
                 //trade(strategyConfig, data)
             });
         });

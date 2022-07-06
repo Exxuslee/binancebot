@@ -33,7 +33,7 @@ interface Candle {
   low: number;
   close: number;
   volume: number;
-  openTime: Date;
+  openTime: date;
   closeTime: Date;
 }
 
@@ -45,7 +45,7 @@ interface CandleRage extends Candle{
   isBuyerMaker: boolean,
   trades: number,
   aggTrades: number
-  rage: Number;
+  rage: number;
 }
 
 type HyperParameters = {

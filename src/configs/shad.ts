@@ -25,7 +25,7 @@ export const config: AbstractStrategyConfig = (parameters) =>
         asset,
         base: 'USDT',
         risk: 0.01,
-        leverage: 1000,
+        leverage: 0.1,
         loopInterval: CandleChartInterval.ONE_MINUTE,
         indicatorIntervals: [CandleChartInterval.FIVE_MINUTES],
         trendFilter: (candles) => 1, // Take only long position, supposing we are in up trend on long term
