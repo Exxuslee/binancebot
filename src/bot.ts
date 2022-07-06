@@ -4,6 +4,9 @@ import {binanceClient} from './init';
 import {Telegram} from './telegram';
 import dayjs from 'dayjs';
 import {Balance} from "./interactor/Balance";
+import {Candles} from "./interactor/Candles";
+import {trade} from "./interactor/Trade";
+import Emittery from "emittery";
 
 export class Bot {
     private strategyConfigs: StrategyConfig[];
@@ -27,16 +30,26 @@ export class Bot {
         this.balance = new Balance()
         this.exchangeInfo = await binanceClient.exchangeInfo();
 
-        let pairs = []
-        this.strategyConfigs.forEach((strategyConfig) =>
-            pairs.push(strategyConfig.asset + strategyConfig.base))
-        binanceClient.ws.aggTrades(pairs, trade => {
-            console.log(trade)
-        })
+        // let pairs = []
+        // this.strategyConfigs.forEach((strategyConfig) =>
+        //     pairs.push(strategyConfig.asset + strategyConfig.base))
+        // console.log(pairs)
+        // binanceClient.ws.aggTrades(pairs, trade => {
+        //     console.log(trade)
+        // })
+
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;
             log(`The bot trades the pair ${pair}`);
 
+            const emitter = new Emittery();
+            let candles = new Candles(emitter)
+            binanceClient.ws.aggTrades(pair, AggregatedTrade => {
+                candles.update(AggregatedTrade)
+            })
+            emitter.on('new candle', data => {
+                trade(strategyConfig, candles.trend())
+            });
         });
     }
 }

@@ -9,10 +9,9 @@ import {OrderSide} from "binance-api-node";
  * @param currentPrice
  * @param candles
  */
-async function trade(
+export async function trade(
     strategyConfig: StrategyConfig,
-    currentPrice: number,
-    candles: CandlesDataMultiTimeFrames
+    candles: CandleRage[]
 ) {
     const {
         asset,
@@ -32,6 +31,7 @@ async function trade(
         maxTradeDuration,
     } = strategyConfig;
     const pair = asset + base;
+    const currentPrice = candles[0].close
 
     // Update the account info
     this.accountInfo = await binanceClient.accountInfo();
@@ -55,12 +55,6 @@ async function trade(
     // Precision
     const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
     const quantityPrecision = getQuantityPrecision(pair, this.exchangeInfo);
-
-    // Check if we are in the trading sessions
-    const isTradingSessionActive = isOnTradingSession(
-        candles[loopInterval][candles[loopInterval].length - 1].closeTime,
-        tradingSessions
-    );
 
 
     // Do not trade with short position if the trend is up
