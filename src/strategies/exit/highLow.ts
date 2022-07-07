@@ -16,7 +16,7 @@ const defaultOptions: Options = {
 
 const strategy = (
   price: number,
-  candles: CandleTime[],
+  candles: Candle[],
   pricePrecision: number,
   side: OrderSide,
   exchangeInfo: ExchangeInfo,

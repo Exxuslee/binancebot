@@ -16,7 +16,7 @@ const defaultOptions: Options = {
  * Return true if the RSI crosses up the oversold threshold
  */
 export const isBuySignal = (
-  candles: CandleTime[],
+  candles: Candle[],
   options = defaultOptions
 ) => {
   if (candles.length < options.rsiPeriod) return false;
@@ -35,7 +35,7 @@ export const isBuySignal = (
  * Return true if the RSI crosses down the overbought threshold
  */
 export const isSellSignal = (
-  candles: CandleTime[],
+  candles: Candle[],
   options = defaultOptions
 ) => {
   if (candles.length < options.rsiPeriod) return false;

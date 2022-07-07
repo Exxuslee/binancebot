@@ -67,7 +67,7 @@ type HyperParameter = {
     | string[]; // Specified string value
 };
 
-type EntryStrategy = (candles: CandlesDataMultiTimeFrames) => boolean;
+type EntryStrategy = (candles: Candle[]) => boolean;
 
 type TakeProfit = { price: number; quantityPercentage: number }; // quantityPercentage = 0.1 => 10%
 

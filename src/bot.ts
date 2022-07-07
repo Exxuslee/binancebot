@@ -53,17 +53,9 @@ export class Bot {
                 currentPrice = Number(AggregatedTrade.price)
                 candles.update(AggregatedTrade)
             })
-            emitter.on(pair, candlesArray => trade(
-                candlesArray,
-                strategyConfig,
-                pricePrecision,
-                quantityPrecision,
-                pair,
-                candles,
-                order,
-                currentPrice,
-                pairBalance
-            ))
+            emitter.on(pair, candlesArray => {
+                //trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, candles, order, currentPrice, pairBalance)
+            })
         })
     }
 }

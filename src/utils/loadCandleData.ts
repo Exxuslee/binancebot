@@ -85,7 +85,7 @@ export async function loadCandlesMultiTimeFramesFromAPI(
  * @param sourceType
  */
 export function getCandleSourceType(
-  candles: CandleTime[],
+  candles: Candle[],
   sourceType: SourceType
 ) {
   switch (sourceType) {

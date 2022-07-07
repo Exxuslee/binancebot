@@ -6,8 +6,7 @@ import {error, logBuySellExecutionOrder} from "../utils/log";
 
 
 export function trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, candles, order, currentPrice, pairBalance) {
-    const tiltMA = false
-    if (!order.hasPosition() && !tiltMA && strategyConfig.buyStrategy(candles)) {
+    if (!order.hasPosition() && strategyConfig.buyStrategy(candles)) {
         const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
         // Calculate TP and SL
         let {takeProfits, stopLoss} = strategyConfig.exitStrategy
@@ -43,7 +42,7 @@ export function trade(candlesArray, strategyConfig, pricePrecision, quantityPrec
             order.newOrder(binanceClient, pair, String(quantity), OrderSide.SELL, OrderType.LIMIT, stopLoss).catch(error);
             logBuySellExecutionOrder(OrderSide.BUY, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
-    } else if (!order.hasPosition() && !tiltMA && strategyConfig.sellStrategy(candles)) {
+    } else if (!order.hasPosition() && strategyConfig.sellStrategy(candles)) {
         //TODO
     }
 }

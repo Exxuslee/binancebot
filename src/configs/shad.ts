@@ -13,8 +13,8 @@ import {STOCHASTIC_RSI} from "../strategies/entry";
 
 const assets = [
     'BTC',
-    'ETH',
-    'BNB',
+   // 'ETH',
+   // 'BNB',
 ];
 
 export const hyperParameters = {};
@@ -22,9 +22,9 @@ export const hyperParameters = {};
 export const config: AbstractStrategyConfig = (parameters) =>
     assets.map((asset) => ({
         asset,
-        base: 'BUSD',
+        base: 'USDT',
         risk: 0.01,
-        leverage: 0.05,
+        leverage: 0.0375,
         loopInterval: CandleChartInterval.ONE_MINUTE,
         indicatorIntervals: [CandleChartInterval.FIVE_MINUTES],
         trendFilter: (candles) => 1, // Take only long position, supposing we are in up trend on long term

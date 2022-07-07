@@ -61,8 +61,11 @@ export class Candles {
     private finish(aggTrade) {
         this.currentRage.closeTime = new Date(aggTrade.timestamp)
         this.candleRage.unshift(this.currentRage)
+        // let temp = ''
+        // this.candleRage.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
+        // console.log(aggTrade.symbol, temp)
         this.init(aggTrade)
-        if (this.candleRage.length > 21) {
+        if (this.candleRage.length > 71) {
             this.emitter.emit(aggTrade.symbol, {
                 data: this.candleRage,
                 currentPrice: aggTrade.price
