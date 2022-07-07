@@ -1,6 +1,6 @@
 import {binanceClient} from "../init";
 import {log} from "../utils/log";
-import {Binance, OrderSide, OrderType} from "binance-api-node";
+import {Binance, OrderType} from "binance-api-node";
 
 export class Order {
     private hasLongPosition = false;
@@ -8,20 +8,12 @@ export class Order {
     private positionSize = 0
 
 
-    /**
-     *  Close all the open orders for a given symbol
-     * @param pair
-     */
     async closeOpenOrders(pair: string) {
-        return new Promise<void>((resolve, reject) => {
-            binanceClient
-                .cancelOpenOrders({symbol: pair})
-                .then(() => {
-                    log(`Close all open orders for the pair ${pair}`);
-                    resolve();
-                })
-                .catch(reject);
-        });
+        let orders = await binanceClient.openOrders({symbol: pair})
+        if (orders.length) {
+            log(`Close all open orders for the pair ${pair}`);
+            await binanceClient.cancelOpenOrders({symbol: pair})
+        }
     }
 
     hasPosition() {

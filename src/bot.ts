@@ -36,15 +36,17 @@ export class Bot {
         await this.balance.init()
 
         this.strategyConfigs.forEach((strategyConfig) => {
+
             const pair = strategyConfig.asset + strategyConfig.base;
-            log(`The bot trades the pair ${pair}`);
             let pairBalance: PairBalance = {
                 b1: this.balance.bCurrent(strategyConfig.asset),
                 b2: this.balance.bCurrent(strategyConfig.base),
                 runningBase: this.strategyConfigs.length
             }
+            log(`Trades ${pair}: ${pairBalance.b1}\t${pairBalance.b2}`);
             let view = new View(emitter, strategyConfig.leverage)
             let order = new Order()
+            order.closeOpenOrders(pair)
             // Precision
             const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
             const quantityPrecision = getQuantityPrecision(pair, this.exchangeInfo);
