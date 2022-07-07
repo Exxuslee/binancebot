@@ -8,7 +8,7 @@ const defaultOptions: Options = {
   atrLength: 14,
 };
 
-export function calculate(candles: CandleTime[], options?: Options) {
+export function calculate(candles: CandleRage[], options?: Options) {
   options = { ...defaultOptions, ...options };
 
   let trueRange = new Array(candles.length).fill(0);
@@ -18,7 +18,7 @@ export function calculate(candles: CandleTime[], options?: Options) {
   let smoothedDirectionalMovementPlus = new Array(candles.length).fill(0);
   let smoothedDirectionalMovementMinus = new Array(candles.length).fill(0);
 
-  const calculateTrueRange = (curCandle: CandleTime, prevCandle: CandleTime) =>
+  const calculateTrueRange = (curCandle: CandleRage, prevCandle: CandleRage) =>
     Math.max(
       Math.max(
         curCandle.high - curCandle.low,
@@ -28,16 +28,16 @@ export function calculate(candles: CandleTime[], options?: Options) {
     );
 
   const calculateDirectionalMovementPlus = (
-    curCandle: CandleTime,
-    prevCandle: CandleTime
+    curCandle: CandleRage,
+    prevCandle: CandleRage
   ) =>
     curCandle.high - prevCandle.high > prevCandle.low - curCandle.low
       ? Math.max(curCandle.high - prevCandle.high, 0)
       : 0;
 
   const calculateDirectionalMovementMinus = (
-    curCandle: CandleTime,
-    prevCandle: CandleTime
+    curCandle: CandleRage,
+    prevCandle: CandleRage
   ) =>
     prevCandle.low - curCandle.low > curCandle.high - prevCandle.high
       ? Math.max(prevCandle.low - curCandle.low, 0)

@@ -9,7 +9,7 @@ interface Options {
 
 const strategy = (
   price: number,
-  candles: CandleTime[],
+  candles: CandleRage[],
   pricePrecision: number,
   side: OrderSide,
   exchangeInfo: ExchangeInfo,

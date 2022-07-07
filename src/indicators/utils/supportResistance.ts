@@ -10,7 +10,7 @@ const defaultOptions: Options = {
   rightBars: 5,
 };
 
-export function calculate(candles: CandleTime[], options?: Options) {
+export function calculate(candles: CandleRage[], options?: Options) {
   options = { ...defaultOptions, ...options };
   let high = candles.map((c) => c.high);
   let low = candles.map((c) => c.low);

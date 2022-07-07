@@ -18,7 +18,7 @@ const getMAClass = (type: MAType) =>
  * Return true if the last candle crosses up the MA
  */
 export const isBuySignal = (
-  candles: CandleTime[],
+  candles: CandleRage[],
   options = defaultOptions
 ) => {
   if (candles.length < options.maPeriod) return false;
@@ -43,7 +43,7 @@ export const isBuySignal = (
  * Return true if the last candle crosses down the MA
  */
 export const isSellSignal = (
-  candles: CandleTime[],
+  candles: CandleRage[],
   options = defaultOptions
 ) => {
   if (candles.length < options.maPeriod) return false;

@@ -22,7 +22,6 @@ export const loadStrategyConfig = (strategyConfigName: string) => {
 
     const AbstractStrategy = config;
     const StrategyConfig = config(hyperParameters);
-    const StrategyHyperParameters = hyperParameters;
 
     // Supported time frame by the robot in development and production mode
     const supportedTimeFrames = [
@@ -69,5 +68,5 @@ export const loadStrategyConfig = (strategyConfigName: string) => {
         process.exit(1);
     }
 
-    return {AbstractStrategy, StrategyConfig, StrategyHyperParameters};
+    return {AbstractStrategy, StrategyConfig};
 };

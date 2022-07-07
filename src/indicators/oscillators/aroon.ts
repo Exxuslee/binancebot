@@ -6,7 +6,7 @@ const defaultOptions: Options = {
   length: 14,
 };
 
-export function calculate(candles: CandleTime[], options?: Options) {
+export function calculate(candles: CandleRage[], options?: Options) {
   options = { ...defaultOptions, ...options };
 
   const high = candles.map((c) => c.high);

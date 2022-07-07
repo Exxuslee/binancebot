@@ -5,8 +5,8 @@ export const initBinanceClient = () =>
          {
                 apiKey: process.env.BINANCE_PUBLIC_KEY,
                 apiSecret: process.env.BINANCE_PRIVATE_KEY,
-                //httpBase: 'https://testnet.binance.vision',
-                httpBase:'https://api.binance.com',
+                httpBase: 'https://testnet.binance.vision',
+                //httpBase:'https://api.binance.com',
                 wsBase: 'wss://testnet.binance.vision/ws'
             }
     );

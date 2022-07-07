@@ -1,5 +1,5 @@
 import { EMA, SMA } from 'technicalindicators';
-import { getCandleSourceType } from '../../utils/loadCandleData';
+import {getCandleSourceType} from "../../utils/currencyInfo";
 
 interface Options {
   sourceType?: SourceType;
@@ -19,7 +19,7 @@ const defaultOptions: Options = {
   signalMaType: 'EMA',
 };
 
-export function calculate(candles: CandleTime[], options?: Options) {
+export function calculate(candles: CandleRage[], options?: Options) {
   options = { ...defaultOptions, ...options };
   let values = getCandleSourceType(candles, options.sourceType);
   let length = values.length - Math.max(options.fastLength, options.slowLength);

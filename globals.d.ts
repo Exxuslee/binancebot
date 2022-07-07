@@ -43,10 +43,6 @@ interface PairBalance {
   runningBase: number
 }
 
-interface CandleTime extends Candle{
-  interval: CandleChartInterval;
-}
-
 interface CandleRage extends Candle{
   isBuyerMaker: boolean,
   trades: number,
@@ -67,14 +63,14 @@ type HyperParameter = {
     | string[]; // Specified string value
 };
 
-type EntryStrategy = (candles: Candle[]) => boolean;
+type EntryStrategy = (candles: CandleRage[]) => boolean;
 
 type TakeProfit = { price: number; quantityPercentage: number }; // quantityPercentage = 0.1 => 10%
 
 // Strategy for Take Profits and Stop Loss
 type ExitStrategy = (
   price: number,
-  candles?: CandlesDataMultiTimeFrames,
+  candles?: CandleRage[],
   pricePrecision: number,
   side: OrderSide, // type from binance api lib
   exchangeInfo: ExchangeInfo

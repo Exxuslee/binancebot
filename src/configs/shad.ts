@@ -60,5 +60,5 @@ export const config: AbstractStrategyConfig = (parameters) =>
                     -MAX_LOADED_CANDLE_LENGTH_API
                 )
             ),
-        sellStrategy: (candles: CandleTime[]) => false,
+        sellStrategy: (candles: CandleRage[]) => false,
     }));

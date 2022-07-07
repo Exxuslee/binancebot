@@ -5,17 +5,21 @@ import {decimalFloor} from "../utils/math";
 import {error, logBuySellExecutionOrder} from "../utils/log";
 
 
-export function trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, candles, order, currentPrice, pairBalance) {
-    if (!order.hasPosition() && strategyConfig.buyStrategy(candles)) {
-        const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
+export function trade(
+    candlesArray, strategyConfig, pricePrecision,
+    quantityPrecision, pair, order,
+    currentPrice, pairBalance, exchangeInfo
+) {
+    if (!order.hasPosition() && strategyConfig.buyStrategy(candlesArray)) {
+        const pricePrecision = getPricePrecision(pair, exchangeInfo);
         // Calculate TP and SL
         let {takeProfits, stopLoss} = strategyConfig.exitStrategy
             ? strategyConfig.exitStrategy(
                 currentPrice,
-                candles,
+                candlesArray,
                 pricePrecision,
                 OrderSide.BUY,
-                this.exchangeInfo
+                exchangeInfo
             )
             : {takeProfits: [], stopLoss: null};
         // Calculate the quantity for the position according to the risk management of the strategy
@@ -28,7 +32,7 @@ export function trade(candlesArray, strategyConfig, pricePrecision, quantityPrec
             risk: strategyConfig.risk,
             enterPrice: currentPrice,
             stopLossPrice: stopLoss,
-            exchangeInfo: this.exchangeInfo
+            exchangeInfo: exchangeInfo
         });
 
         order.newOrder(binanceClient, pair, String(quantity), OrderSide.BUY, OrderType.MARKET).then(() => {
@@ -42,7 +46,8 @@ export function trade(candlesArray, strategyConfig, pricePrecision, quantityPrec
             order.newOrder(binanceClient, pair, String(quantity), OrderSide.SELL, OrderType.LIMIT, stopLoss).catch(error);
             logBuySellExecutionOrder(OrderSide.BUY, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
-    } else if (!order.hasPosition() && strategyConfig.sellStrategy(candles)) {
+        console.log("Buy done")
+    } else if (!order.hasPosition() && strategyConfig.sellStrategy(candlesArray)) {
         //TODO
     }
 }

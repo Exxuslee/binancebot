@@ -2,7 +2,7 @@ import {AggregatedTrade} from 'binance-api-node';
 import Emittery from "emittery";
 
 
-export class Candles {
+export class View {
     private emitter: Emittery;
     private candleRage: CandleRage[] = []
     private currentRage: CandleRage
@@ -61,13 +61,13 @@ export class Candles {
     private finish(aggTrade) {
         this.currentRage.closeTime = new Date(aggTrade.timestamp)
         this.candleRage.unshift(this.currentRage)
-        // let temp = ''
-        // this.candleRage.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
-        // console.log(aggTrade.symbol, temp)
+        let temp = ''
+        this.candleRage.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
+        console.log(aggTrade.symbol, temp)
         this.init(aggTrade)
         if (this.candleRage.length > 71) {
             this.emitter.emit(aggTrade.symbol, {
-                data: this.candleRage,
+                dataCandles: this.candleRage,
                 currentPrice: aggTrade.price
             })
             this.candleRage.pop()

@@ -1,5 +1,5 @@
 import { SMA, SD } from 'technicalindicators';
-import { getCandleSourceType } from '../../utils/loadCandleData';
+import {getCandleSourceType} from "../../utils/currencyInfo";
 
 interface Options {
   sourceType?: SourceType;

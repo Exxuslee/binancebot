@@ -4,7 +4,7 @@ import {binanceClient} from './init';
 import {Telegram} from './telegram';
 import dayjs from 'dayjs';
 import {Balance} from "./interactor/Balance";
-import {Candles} from "./interactor/Candles";
+import {View} from "./interactor/View";
 import Emittery from "emittery";
 import {Order} from "./interactor/Order";
 import {getPricePrecision, getQuantityPrecision} from "./utils/currencyInfo";
@@ -43,18 +43,23 @@ export class Bot {
                 b2: this.balance.bCurrent(strategyConfig.base),
                 runningBase: this.strategyConfigs.length
             }
-            let candles = new Candles(emitter, strategyConfig.leverage)
+            let view = new View(emitter, strategyConfig.leverage)
             let order = new Order()
             // Precision
             const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
             const quantityPrecision = getQuantityPrecision(pair, this.exchangeInfo);
-            let currentPrice: number
-            binanceClient.ws.aggTrades(pair, AggregatedTrade => {
-                currentPrice = Number(AggregatedTrade.price)
-                candles.update(AggregatedTrade)
-            })
+            binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, candlesArray => {
-                //trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, candles, order, currentPrice, pairBalance)
+                trade(candlesArray.dataCandles,
+                    strategyConfig,
+                    pricePrecision,
+                    quantityPrecision,
+                    pair,
+                    order,
+                    candlesArray.currentPrice,
+                    pairBalance,
+                    this.exchangeInfo,
+                )
             })
         })
     }

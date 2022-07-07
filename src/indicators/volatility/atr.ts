@@ -9,8 +9,8 @@ const defaultOptions: Options = {
 };
 
 
-export function calculate(candles: CandleTime[], options?: Options) {
-  let { symbol, interval, openTime } = candles[candles.length - 1];
+export function calculate(candles: CandleRage[], options?: Options) {
+  let { symbol, openTime } = candles[candles.length - 1];
   options = { ...defaultOptions, ...options };
 
   let high = candles.map((c) => c.high);

@@ -20,7 +20,7 @@ const getMAClass = (type: MAType) =>
 /**
  * Return true if the first MA crosses up the second MA
  */
-export const isBuySignal = (candles: CandleTime[], options = defaultOption) => {
+export const isBuySignal = (candles: CandleRage[], options = defaultOption) => {
   if (candles.length < Math.max(options.smallPeriod, options.longPeriod))
     return false;
 
@@ -50,7 +50,7 @@ export const isBuySignal = (candles: CandleTime[], options = defaultOption) => {
  * Return true if the first MA crosses down the second MA
  */
 export const isSellSignal = (
-  candles: CandleTime[],
+  candles: CandleRage[],
   options = defaultOption
 ) => {
   if (candles.length >= options.longPeriod) {

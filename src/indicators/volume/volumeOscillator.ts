@@ -13,7 +13,7 @@ const defaultOptions: Options = {
 /**
  * Oscillator volume
  */
-export function calculate(candles: CandleTime[], options?: Options) {
+export function calculate(candles: CandleRage[], options?: Options) {
   options = { ...defaultOptions, ...options };
   let volume = candles.map((c) => c.volume);
   let results: number[] = [];

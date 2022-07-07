@@ -1,5 +1,3 @@
-import { getCandleSourceType } from '../../utils/loadCandleData';
-
 interface Options {
   period?: number;
 }

@@ -22,7 +22,7 @@ const defaultOptions: Options = {
  * Return true if the k signal crosses up the d signal and we are in uptrend
  */
 export const isBuySignal = (
-    candles: CandleTime[],
+    candles: CandleRage[],
     options = defaultOptions
 ) => {
     if (candles.length < Math.max(options.rsiPeriod, options.stochasticPeriod))
@@ -50,7 +50,7 @@ export const isBuySignal = (
  * Return true if k signal crosses down the d signal and we are in downtrend
  */
 export const isSellSignal = (
-    candles: CandleTime[],
+    candles: CandleRage[],
     options = defaultOptions
 ) => {
     if (candles.length < Math.max(options.rsiPeriod, options.stochasticPeriod))

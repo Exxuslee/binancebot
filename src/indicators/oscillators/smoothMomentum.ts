@@ -12,7 +12,7 @@ const defaultOptions: Options = {
   tmoLength: 3,
 };
 
-export function calculate(candles: CandleTime[], options?: Options) {
+export function calculate(candles: CandleRage[], options?: Options) {
   options = { ...defaultOptions, ...options };
   let data = new Array(candles.length).fill(0);
 

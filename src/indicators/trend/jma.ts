@@ -1,4 +1,4 @@
-import { getCandleSourceType } from '../../utils/loadCandleData';
+import {getCandleSourceType} from "../../utils/currencyInfo";
 
 interface Options {
   sourceType?: SourceType;
@@ -13,7 +13,7 @@ const defaultOptions: Options = {
 /**
  * Calculate the Juryk Moving Average
  */
-export function calculate(candles: CandleTime[], options?: Options) {
+export function calculate(candles: CandleRage[], options?: Options) {
   options = { ...defaultOptions, ...options };
   let values = getCandleSourceType(candles, options.sourceType);
   let jsa = [];

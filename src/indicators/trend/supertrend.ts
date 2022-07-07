@@ -11,7 +11,7 @@ const defaultOptions: Options = {
 };
 
 export function calculate(
-  candles: CandleTime[],
+  candles: CandleRage[],
   options?: Options
 ): { trend: number; up: number; down: number }[] {
   options = { ...defaultOptions, ...options };

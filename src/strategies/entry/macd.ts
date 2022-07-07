@@ -21,7 +21,7 @@ const defaultOptions: Options = {
  * Return true if the macd crosses up the signal and we are in uptrend
  */
 export const isBuySignal = (
-  candles: CandleTime[],
+  candles: CandleRage[],
   options = defaultOptions
 ) => {
   if (candles.length < Math.max(options.macdSlowPeriod, options.macdFastPeriod))
@@ -47,7 +47,7 @@ export const isBuySignal = (
  * Return true if the macd crosses down the signal and we are in downtrend
  */
 export const isSellSignal = (
-  candles: CandleTime[],
+  candles: CandleRage[],
   options = defaultOptions
 ) => {
   if (candles.length < Math.max(options.macdSlowPeriod, options.macdFastPeriod))
