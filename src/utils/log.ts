@@ -40,7 +40,7 @@ export function logBuySellExecutionOrder(
   asset: string,
   base: string,
   price: number,
-  quantity: number,
+  quantity: string,
   takeProfits: { price: number; quantityPercentage: number }[],
   stopLoss: number
 ) {

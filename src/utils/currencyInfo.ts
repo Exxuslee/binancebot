@@ -11,9 +11,13 @@ export function validQuantity(
     exchangeInfo: ExchangeInfo
 ): number {
     const rules = getLotSizeQuantityRules(pair, exchangeInfo);
-    if (Math.abs(quantity) <= rules.minQty) return rules.minQty
-    else if (Math.abs(quantity) >= rules.maxQty) return rules.maxQty
-    else return quantity - (quantity % rules.stepSize)
+    let out = rules.minQty
+    if (Math.abs(quantity) >= rules.maxQty) out = rules.maxQty
+    if (rules.stepSize > 0) {
+        let n = Math.round(quantity / rules.stepSize)
+        out = rules.stepSize * n
+    }
+    return out
 }
 
 /**

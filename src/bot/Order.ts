@@ -1,11 +1,10 @@
 import {binanceClient} from "../init";
 import {log} from "../utils/log";
-import {Binance, OrderType} from "binance-api-node";
+import {Binance, OrderSide, OrderType} from "binance-api-node";
 
 export class Order {
     private hasLongPosition = false;
     private hasShortPosition = false;
-    private positionSize = 0
 
 
     async closeOpenOrders(pair: string) {
@@ -34,15 +33,17 @@ export class Order {
                 side: orderSide,
                 type: type,
                 symbol: pair,
-                quantity: String(quantity)
+                quantity: quantity
             })
         else if (type == OrderType.LIMIT)
             await binanceClient.order({
                 side: orderSide,
                 type: type,
                 symbol: pair,
-                quantity: String(quantity),
-                price: price.toString()
+                quantity: quantity,
+                price: stopLoss.toString()
             })
+        if (type == OrderSide.BUY) this.hasLongPosition = true
+        if (type == OrderSide.SELL) this.hasLongPosition = true
     }
 }

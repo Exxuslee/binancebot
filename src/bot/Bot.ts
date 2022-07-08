@@ -18,12 +18,14 @@ export class Bot {
     private hasOpenPosition: { [pair: string]: boolean };
     private currentDay: string;
     private currentMonth: string;
+    private bit:boolean
 
     constructor(tradeConfigs: StrategyConfig[]) {
         this.strategyConfigs = tradeConfigs;
         this.hasOpenPosition = {};
         this.currentDay = dayjs(Date.now()).format('DD/MM/YYYY');
         this.currentMonth = dayjs(Date.now()).format('MM/YYYY');
+        this.bit = true
     }
 
     public async run() {
@@ -68,6 +70,11 @@ export class Bot {
         if (!order.hasPosition() && strategyConfig.sellStrategy(candlesArray)) {
             //TODO sell
         }
+
+        if (this.bit) {
+            await this.buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice)
+            this.bit = false
+        }
     }
 
     async buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
@@ -93,25 +100,13 @@ export class Bot {
             stopLossPrice: stopLoss,
             exchangeInfo: this.exchangeInfo
         });
-        log(`${pair} taker buy1 ${String(quantity)}`);
-        quantity = validQuantity(quantity, pair, this.exchangeInfo)
+        quantity = String(decimalFloor(validQuantity(quantity, pair, this.exchangeInfo), quantityPrecision))
 
-        log(`${pair} taker buy2 ${String(quantity)}`);
-        log(`${pair} taker buy3 ${String(decimalFloor(quantity, quantityPrecision))}`);
-
-        order.newOrder(binanceClient, pair, String(decimalFloor(quantity, quantityPrecision)), OrderSide.BUY, OrderType.MARKET).then(() => {
-            if (takeProfits.length > 0) {
-                // Create the take profit orders
-                takeProfits.forEach(({price, quantityPercentage}) => {
-                    log(`${pair} sell maker profit`);
-                    order.newOrder(binanceClient, pair, String(decimalFloor(quantity * quantityPercentage, quantityPrecision)), OrderSide.SELL, OrderType.LIMIT, price).catch(error);
-                });
-            }
-            log(`${pair} sell maker stop-loss`);
-            order.newOrder(binanceClient, pair, String(quantity), OrderSide.SELL, OrderType.LIMIT, stopLoss).catch(error);
+        order.newOrder(binanceClient, pair, quantity, OrderSide.BUY, OrderType.MARKET).then(() => {
+            console.log(stopLoss)
+            order.newOrder(binanceClient, pair, quantity, OrderSide.SELL, OrderType.LIMIT, stopLoss).catch(error);
             logBuySellExecutionOrder(OrderSide.BUY, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
-        console.log("Buy done")
     }
 
 }
