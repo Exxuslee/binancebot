@@ -44,7 +44,7 @@ export class Order {
                 symbol: pair,
                 quantity: quantity
             }).then(res => true)
-        else if (type == OrderType.LIMIT)
+        else if (type == OrderType.STOP_LOSS_LIMIT)
             await binanceClient.order({
                 side: orderSide,
                 type: type,
