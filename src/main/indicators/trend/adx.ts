@@ -1,4 +1,4 @@
-import { RMA } from '..';
+import { RMA } from '../index';
 
 interface Options {
   period?: number;

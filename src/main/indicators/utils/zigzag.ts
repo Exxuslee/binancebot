@@ -1,4 +1,4 @@
-import { Pivots } from '..';
+import { Pivots } from '../index';
 
 interface Options {
   maxPivotSize?: number;
