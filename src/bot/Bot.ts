@@ -27,6 +27,7 @@ export class Bot {
     }
 
     public async run() {
+
         log('=========== 💵 BINANCE BOT TRADING 💵 ===========');
         this.telegram = new Telegram()
         this.balance = new Balance()
@@ -46,8 +47,6 @@ export class Bot {
             // Precision
             const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
             const quantityPrecision = getQuantityPrecision(pair, this.exchangeInfo);
-            log(`quantityPrecision ${pair}: ${quantityPrecision}`);
-            log(`quantityPrecision ${pair}: ${quantityPrecision}`);
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, candlesArray => {
                 this.trade(candlesArray.dataCandles,
@@ -94,10 +93,11 @@ export class Bot {
             stopLossPrice: stopLoss,
             exchangeInfo: this.exchangeInfo
         });
+        log(`${pair} taker buy1 ${String(quantity)}`);
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
 
-        log(`${pair} taker buy1 ${String(quantity)}`);
-        log(`${pair} taker buy2 ${String(decimalFloor(quantity, quantityPrecision))}`);
+        log(`${pair} taker buy2 ${String(quantity)}`);
+        log(`${pair} taker buy3 ${String(decimalFloor(quantity, quantityPrecision))}`);
 
         order.newOrder(binanceClient, pair, String(decimalFloor(quantity, quantityPrecision)), OrderSide.BUY, OrderType.MARKET).then(() => {
             if (takeProfits.length > 0) {
