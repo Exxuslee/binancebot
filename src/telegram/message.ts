@@ -1,6 +1,6 @@
 import {decimalFloor} from "../utils/math";
 import {Telegram} from "./index";
-import {Balance} from "../interactor/Balance";
+import {Balance} from "../bot/Balance";
 
 
 /**
