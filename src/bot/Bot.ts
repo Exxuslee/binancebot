@@ -18,7 +18,7 @@ export class Bot {
     private hasOpenPosition: { [pair: string]: boolean };
     private currentDay: string;
     private currentMonth: string;
-    private bit:boolean
+    private bit: boolean
 
     constructor(tradeConfigs: StrategyConfig[]) {
         this.strategyConfigs = tradeConfigs;
@@ -64,17 +64,15 @@ export class Bot {
     }
 
     async trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
-        if (!order.hasPosition() && strategyConfig.buyStrategy(candlesArray)) {
+        if (order.longStopLoss === null && strategyConfig.buyStrategy(candlesArray)) {
             await this.buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice)
         }
-        if (!order.hasPosition() && strategyConfig.sellStrategy(candlesArray)) {
+        if (order.shortStopLoss === null && strategyConfig.sellStrategy(candlesArray)) {
             //TODO sell
         }
 
-        if (this.bit) {
-            await this.buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice)
-            this.bit = false
-        }
+        if (order.longStopLoss > currentPrice) order.longStopLoss = null
+        if (order.shortStopLoss < currentPrice) order.shortStopLoss = null
     }
 
     async buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
@@ -102,11 +100,12 @@ export class Bot {
         });
         quantity = String(decimalFloor(validQuantity(quantity, pair, this.exchangeInfo), quantityPrecision))
 
-        order.newOrder(binanceClient, pair, quantity, OrderSide.BUY, OrderType.MARKET).then(() => {
-            console.log(stopLoss)
-            order.newOrder(binanceClient, pair, quantity, OrderSide.SELL, OrderType.LIMIT, stopLoss).catch(error);
+        await order.newOrder(binanceClient, pair, quantity, OrderSide.BUY, OrderType.MARKET, currentPrice).then(() => {
+            order.newOrder(binanceClient, pair, quantity, OrderSide.SELL, OrderType.STOP_LOSS_LIMIT, stopLoss).catch(error);
+            console.log("order", order.longStopLoss, order.shortStopLoss)
             logBuySellExecutionOrder(OrderSide.BUY, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
+        console.log(order.viewOpenOrders(pair))
     }
 
 }

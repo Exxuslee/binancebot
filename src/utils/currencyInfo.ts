@@ -20,6 +20,16 @@ export function validQuantity(
     return out
 }
 
+export function validPrice(
+    price: number,
+    pair: string,
+    exchangeInfo: ExchangeInfo
+): number {
+    let tickSize = getTickSize(pair, exchangeInfo);
+    let n = Math.round(price / tickSize)
+    return tickSize * n
+}
+
 /**
  * Get the minimal quantity to trade with this pair according to the
  * Binance futures trading rules
@@ -40,7 +50,7 @@ export function getMinOrderQuantity(
  * @see https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#lot_size
  * @see https://www.binance.com/en/support/faq/360033161972
  */
-export function getLotSizeQuantityRules(
+function getLotSizeQuantityRules(
     pair: string,
     exchangeInfo: ExchangeInfo
 ) {

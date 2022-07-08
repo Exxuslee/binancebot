@@ -1,6 +1,6 @@
 import {CandleChartInterval} from "binance-api-node";
 import {getPositionSizeByPercent} from "../strategies/risk";
-import {highLowExitStrategy} from "../strategies/exit";
+import {deltaExitStrategy, highLowExitStrategy} from "../strategies/exit";
 import {RSI} from "../strategies/entry";
 
 
@@ -28,17 +28,12 @@ export const config: AbstractStrategyConfig = (hyperParameters) =>
         loopInterval: CandleChartInterval.ONE_MINUTE,
         indicatorIntervals: [CandleChartInterval.FIVE_MINUTES],
         exitStrategy: (price, candles, pricePrecision, side, exchangeInfo) =>
-            highLowExitStrategy(
+            deltaExitStrategy(
                 price,
                 candles,
                 pricePrecision,
                 side,
-                exchangeInfo,
-                {
-                    takeProfitRatio: 2,
-                    lookBack: 14,
-                    side,
-                }
+                exchangeInfo
             ),
         buyStrategy: (candles) =>
             RSI.isBuySignal(candles, {
@@ -52,4 +47,5 @@ export const config: AbstractStrategyConfig = (hyperParameters) =>
             }),
         riskManagement: getPositionSizeByPercent,
     }));
+
 

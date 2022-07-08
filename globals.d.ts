@@ -71,7 +71,7 @@ type TakeProfit = { price: number; quantityPercentage: number }; // quantityPerc
 type ExitStrategy = (
   price: number,
   candles?: CandleRage[],
-  pricePrecision: number,
+  pricePrecision?: number,
   side: OrderSide, // type from binance api lib
   exchangeInfo: ExchangeInfo
 ) => {

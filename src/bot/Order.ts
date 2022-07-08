@@ -3,8 +3,8 @@ import {log} from "../utils/log";
 import {Binance, OrderSide, OrderType} from "binance-api-node";
 
 export class Order {
-    private hasLongPosition = false;
-    private hasShortPosition = false;
+    public longStopLoss: number = null;
+    public shortStopLoss: number = null;
 
 
     async closeOpenOrders(pair: string) {
@@ -15,10 +15,19 @@ export class Order {
         }
     }
 
-    hasPosition() {
-        return this.hasLongPosition || this.hasShortPosition
+    async viewOpenOrders(pair: string) {
+        let orders = await binanceClient.openOrders({symbol: pair})
+        console.log("ord", orders)
+
     }
 
+    hasLongPosition() {
+        return this.longStopLoss
+    }
+
+    hasShortPosition() {
+        return this.shortStopLoss
+    }
 
     async newOrder(
         binanceClient: Binance,
@@ -26,24 +35,24 @@ export class Order {
         quantity: string,
         orderSide,
         type,
-        price?: number,
-        stopLoss?: number) {
+        price: number,
+    ) {
         if (type == OrderType.MARKET)
             await binanceClient.order({
                 side: orderSide,
                 type: type,
                 symbol: pair,
                 quantity: quantity
-            })
+            }).then(res => true)
         else if (type == OrderType.LIMIT)
             await binanceClient.order({
                 side: orderSide,
                 type: type,
                 symbol: pair,
                 quantity: quantity,
-                price: stopLoss.toString()
-            })
-        if (type == OrderSide.BUY) this.hasLongPosition = true
-        if (type == OrderSide.SELL) this.hasLongPosition = true
+                stopPrice: String(price)
+            }).then(res => console.log(res))
+        if (type === OrderSide.BUY) this.longStopLoss = price
+        if (type === OrderSide.SELL) this.shortStopLoss = price
     }
 }
