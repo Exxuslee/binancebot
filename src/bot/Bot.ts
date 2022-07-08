@@ -64,15 +64,16 @@ export class Bot {
     }
 
     async trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
-        if (order.longStopLoss === null && strategyConfig.buyStrategy(candlesArray)) {
+        console.log("order", pair, order.getLong(), order.getShort())
+        if (order.getLong() === null && strategyConfig.buyStrategy(candlesArray)) {
             await this.buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice)
         }
-        if (order.shortStopLoss === null && strategyConfig.sellStrategy(candlesArray)) {
+        if (order.getShort() === null && strategyConfig.sellStrategy(candlesArray)) {
             //TODO sell
         }
 
-        if (order.longStopLoss > currentPrice) order.longStopLoss = null
-        if (order.shortStopLoss < currentPrice) order.shortStopLoss = null
+        if (order.getLong() !== null) if (+order.getLong().price > currentPrice) order.setLong()
+        if (order.getShort() !== null) if (+order.getShort().price < currentPrice) order.setShort()
     }
 
     async buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
@@ -101,11 +102,9 @@ export class Bot {
         quantity = String(decimalFloor(validQuantity(quantity, pair, this.exchangeInfo), quantityPrecision))
 
         await order.newOrder(binanceClient, pair, quantity, OrderSide.BUY, OrderType.MARKET, currentPrice).then(() => {
-            order.newOrder(binanceClient, pair, quantity, OrderSide.SELL, OrderType.STOP_LOSS_LIMIT, stopLoss).catch(error);
-            console.log("order", order.longStopLoss, order.shortStopLoss)
+            order.newOrder(binanceClient, pair, quantity, OrderSide.SELL, OrderType.LIMIT, stopLoss).catch(error);
             logBuySellExecutionOrder(OrderSide.BUY, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
-        console.log(order.viewOpenOrders(pair))
     }
 
 }

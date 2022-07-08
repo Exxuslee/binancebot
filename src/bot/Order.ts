@@ -3,9 +3,13 @@ import {log} from "../utils/log";
 import {Binance, OrderSide, OrderType} from "binance-api-node";
 
 export class Order {
-    public longStopLoss: number = null;
-    public shortStopLoss: number = null;
+    private longStopLoss;
+    private shortStopLoss;
 
+    constructor() {
+        this.longStopLoss = null
+        this.shortStopLoss = null
+    }
 
     async closeOpenOrders(pair: string) {
         let orders = await binanceClient.openOrders({symbol: pair})
@@ -21,12 +25,20 @@ export class Order {
 
     }
 
-    hasLongPosition() {
+    getLong() {
         return this.longStopLoss
     }
 
-    hasShortPosition() {
+    getShort() {
         return this.shortStopLoss
+    }
+
+    setLong() {
+        this.longStopLoss = null
+    }
+
+    setShort() {
+        this.shortStopLoss = null
     }
 
     async newOrder(
@@ -37,22 +49,29 @@ export class Order {
         type,
         price: number,
     ) {
-        if (type == OrderType.MARKET)
+        if (type === OrderType.MARKET)
             await binanceClient.order({
                 side: orderSide,
                 type: type,
                 symbol: pair,
                 quantity: quantity
-            }).then(res => true)
-        else if (type == OrderType.STOP_LOSS_LIMIT)
-            await binanceClient.order({
+            })
+        else if (type === OrderType.LIMIT && orderSide === OrderSide.BUY)
+            this.shortStopLoss = await binanceClient.order({
                 side: orderSide,
                 type: type,
                 symbol: pair,
                 quantity: quantity,
-                stopPrice: String(price)
-            }).then(res => console.log(res))
-        if (type === OrderSide.BUY) this.longStopLoss = price
-        if (type === OrderSide.SELL) this.shortStopLoss = price
+                price: String(price)
+            })
+        else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
+            this.longStopLoss = await binanceClient.order({
+                side: orderSide,
+                type: type,
+                symbol: pair,
+                quantity: quantity,
+                price: String(price)
+            })
+        else throw ('Unknown type & OrderSide')
     }
 }
