@@ -44,7 +44,7 @@ export class Order {
     async newOrder(
         binanceClient: Binance,
         pair: string,
-        quantity: string,
+        quantity: number,
         orderSide,
         type,
         price: number,
@@ -54,14 +54,14 @@ export class Order {
                 side: orderSide,
                 type: type,
                 symbol: pair,
-                quantity: quantity
+                quantity: String(quantity)
             })
         else if (type === OrderType.LIMIT && orderSide === OrderSide.BUY)
             this.shortStopLoss = await binanceClient.order({
                 side: orderSide,
                 type: type,
                 symbol: pair,
-                quantity: quantity,
+                quantity: String(quantity),
                 price: String(price)
             })
         else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
@@ -69,7 +69,7 @@ export class Order {
                 side: orderSide,
                 type: type,
                 symbol: pair,
-                quantity: quantity,
+                quantity: String(quantity),
                 price: String(price)
             })
         else throw ('Unknown type & OrderSide')

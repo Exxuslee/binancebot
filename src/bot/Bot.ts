@@ -63,30 +63,28 @@ export class Bot {
         })
     }
 
-    async trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
-        console.log("order", pair, order.getLong(), order.getShort())
-        if (order.getLong() === null && strategyConfig.buyStrategy(candlesArray)) {
-            await this.buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice)
+    async trade(candles, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
+        if (order.getLong() === null && strategyConfig.buyStrategy(candles)) {
+            await this.startSignal(candles, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice, OrderSide.BUY)
         }
-        if (order.getShort() === null && strategyConfig.sellStrategy(candlesArray)) {
-            //TODO sell
+        if (order.getShort() === null && strategyConfig.sellStrategy(candles)) {
+            await this.startSignal(candles, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice, OrderSide.SELL)
         }
 
         if (order.getLong() !== null) if (+order.getLong().price > currentPrice) order.setLong()
         if (order.getShort() !== null) if (+order.getShort().price < currentPrice) order.setShort()
     }
 
-    async buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
-        // Calculate TP and SL
+    async startSignal(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice, orderSide) {
+        let banOrder = (orderSide === OrderSide.BUY) ? OrderSide.BUY : OrderSide.SELL
         let {takeProfits, stopLoss} = strategyConfig.exitStrategy
             ? strategyConfig.exitStrategy(
                 currentPrice,
                 candlesArray,
                 pricePrecision,
-                OrderSide.BUY,
+                orderSide,
                 this.exchangeInfo
-            )
-            : {takeProfits: [], stopLoss: null};
+            ) : {takeProfits: [], stopLoss: null};
         // Calculate the quantity for the position according to the risk management of the strategy
         let quantity = strategyConfig.riskManagement({
             asset: strategyConfig.asset,
@@ -99,12 +97,15 @@ export class Bot {
             stopLossPrice: stopLoss,
             exchangeInfo: this.exchangeInfo
         });
-        quantity = String(decimalFloor(validQuantity(quantity, pair, this.exchangeInfo), quantityPrecision))
+        quantity = decimalFloor(validQuantity(quantity, pair, this.exchangeInfo), quantityPrecision)
 
-        await order.newOrder(binanceClient, pair, quantity, OrderSide.BUY, OrderType.MARKET, currentPrice).then(() => {
-            order.newOrder(binanceClient, pair, quantity, OrderSide.SELL, OrderType.LIMIT, stopLoss).catch(error);
-            logBuySellExecutionOrder(OrderSide.BUY, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
+        await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
+            order.newOrder(binanceClient, pair, quantity, banOrder, OrderType.LIMIT, stopLoss).catch(error);
+            logBuySellExecutionOrder(orderSide, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
     }
 
+    async stopSignal() {
+
+    }
 }
