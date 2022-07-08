@@ -2,11 +2,10 @@
   "name": "binancebot",
   "version": "1.0.0",
   "description": "binance bot",
-  "main": "src/main/index.ts",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "nodemon ./build/server.js",
-    "build": "tsc",
-    "test": "echo \\\"Error: no tests specified\\\" && exit 1"
+    "start": "nodemon ./build/main/server.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "Exxuslee",
@@ -24,11 +23,9 @@
     "winston": "^3.8.1"
   },
   "devDependencies": {
-    "@types/jest": "^27.5.0",
     "@types/node-telegram-bot-api": "^0.57.0",
     "@types/object-hash": "^2.2.1",
     "cross-env": "^7.0.3",
-    "jest": "^28.1.0",
     "nodemon": "^2.0.7",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.3"
