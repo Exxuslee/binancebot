@@ -1,5 +1,5 @@
 import {ExchangeInfo} from 'binance-api-node';
-import {decimalCeil} from './math';
+import {decimalCeil, decimalFloor} from './math';
 import {log} from "./log";
 
 /**
@@ -17,7 +17,7 @@ export function validQuantity(
         let n = Math.round(quantity / rules.stepSize)
         out = rules.stepSize * n
     }
-    return out
+    return decimalFloor(out, getQuantityPrecision(pair, exchangeInfo))
 }
 
 export function validPrice(
@@ -27,7 +27,7 @@ export function validPrice(
 ): number {
     let tickSize = getTickSize(pair, exchangeInfo);
     let n = Math.round(price / tickSize)
-    return tickSize * n
+    return decimalFloor(tickSize * n, getPricePrecision(pair, exchangeInfo))
 }
 
 /**

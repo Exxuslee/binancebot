@@ -5,10 +5,14 @@ import {Binance, OrderSide, OrderType} from "binance-api-node";
 export class Order {
     private longStopLoss;
     private shortStopLoss;
+    private iBull;
+    private iBear;
 
     constructor() {
         this.longStopLoss = null
         this.shortStopLoss = null
+        this.iBull = false
+        this.iBear = false
     }
 
     async closeOpenOrders(pair: string) {
@@ -25,22 +29,6 @@ export class Order {
 
     }
 
-    getLong() {
-        return this.longStopLoss
-    }
-
-    getShort() {
-        return this.shortStopLoss
-    }
-
-    setLong() {
-        this.longStopLoss = null
-    }
-
-    setShort() {
-        this.shortStopLoss = null
-    }
-
     async newOrder(
         binanceClient: Binance,
         pair: string,
@@ -49,6 +37,7 @@ export class Order {
         type,
         price: number,
     ) {
+        console.log(pair, orderSide, type, price, quantity)
         if (type === OrderType.MARKET)
             await binanceClient.order({
                 side: orderSide,
@@ -73,5 +62,37 @@ export class Order {
                 price: String(price)
             })
         else throw ('Unknown type & OrderSide')
+    }
+
+    getBul() {
+        return this.iBull
+    }
+
+    getBear() {
+        return this.iBear
+    }
+
+    setBull(ok: boolean) {
+        this.iBull = ok
+    }
+
+    setBear(ok: boolean) {
+        this.iBear = ok
+    }
+
+    getLong() {
+        return this.longStopLoss
+    }
+
+    getShort() {
+        return this.shortStopLoss
+    }
+
+    setLong() {
+        this.longStopLoss = null
+    }
+
+    setShort() {
+        this.shortStopLoss = null
     }
 }
