@@ -37,12 +37,6 @@ interface Candle {
   closeTime: Date;
 }
 
-interface PairBalance {
-  b1: number;
-  b2: number;
-  runningBase: number
-}
-
 interface CandleRage extends Candle{
   isBuyerMaker: boolean,
   trades: number,

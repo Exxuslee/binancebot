@@ -65,7 +65,7 @@ export class View {
         // this.candleRage.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
         // console.log(aggTrade.symbol, temp)
         this.init(aggTrade)
-        if (this.candleRage.length > 71) {
+        if (this.candleRage.length > 20) {
             this.emitter.emit(aggTrade.symbol, {
                 dataCandles: this.candleRage,
                 currentPrice: aggTrade.price

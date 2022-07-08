@@ -4,12 +4,14 @@ import * as MACD from './macd';
 import * as MA_CROSS from './maCross';
 import * as RELOAD_ZONE from './reloadZone';
 import * as STOCHASTIC_RSI from './stochasticRsi';
+import * as DELTA from './delta';
 
 export {
-  RSI,
-  MA,
-  MACD,
-  MA_CROSS,
-  RELOAD_ZONE,
-  STOCHASTIC_RSI,
+    RSI,
+    MA,
+    MACD,
+    MA_CROSS,
+    RELOAD_ZONE,
+    STOCHASTIC_RSI,
+    DELTA
 };

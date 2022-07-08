@@ -9,6 +9,7 @@ import Emittery from "emittery";
 import {Order} from "./Order";
 import {getPricePrecision, getQuantityPrecision, validQuantity} from "../utils/currencyInfo";
 import {decimalFloor} from "../utils/math";
+import {WMA} from "technicalindicators";
 
 export class Bot {
     private strategyConfigs: StrategyConfig[];
@@ -34,6 +35,11 @@ export class Bot {
         this.telegram = new Telegram()
         this.balance = new Balance()
         this.exchangeInfo = await binanceClient.exchangeInfo();
+
+        let candles = [1,2,3,4,5,6,7,8,9,10].reverse()
+        const values = WMA.calculate({ values: candles, period: 4});
+        console.log(values)
+
 
         const emitter = new Emittery();
         await this.balance.init()

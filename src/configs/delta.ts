@@ -1,7 +1,7 @@
 import {CandleChartInterval} from "binance-api-node";
 import {getPositionSizeByPercent} from "../strategies/risk";
-import {deltaExitStrategy, highLowExitStrategy} from "../strategies/exit";
-import {RSI} from "../strategies/entry";
+import {deltaExitStrategy} from "../strategies/exit";
+import {DELTA} from "../strategies/entry";
 
 
 const assets = [
@@ -10,13 +10,7 @@ const assets = [
     'BNB',
 ];
 
-export const hyperParameters = {
-    takeProfitRatio: { value: 3 },
-    lookBack: { value: 14 },
-    rsiPeriod: { value: 14 },
-    rsiOversold: { value: 30 },
-    rsiOverbought: { value: 70 },
-};
+export const hyperParameters = {};
 
 export const config: AbstractStrategyConfig = (hyperParameters) =>
     assets.map((asset) => ({
@@ -35,16 +29,8 @@ export const config: AbstractStrategyConfig = (hyperParameters) =>
                 side,
                 exchangeInfo
             ),
-        buyStrategy: (candles) =>
-            RSI.isBuySignal(candles, {
-                rsiPeriod: hyperParameters.rsiPeriod.value,
-                rsiOversold: hyperParameters.rsiOversold.value,
-            }),
-        sellStrategy: (candles) =>
-            RSI.isSellSignal(candles, {
-                rsiPeriod: hyperParameters.rsiPeriod.value,
-                rsiOverbought: hyperParameters.rsiOverbought.value,
-            }),
+        buyStrategy: (candles) => DELTA.isBuySignal(candles),
+        sellStrategy: (candles) => DELTA.isSellSignal(candles),
         riskManagement: getPositionSizeByPercent,
     }));
 
