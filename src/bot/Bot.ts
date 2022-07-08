@@ -7,7 +7,7 @@ import {Balance} from "./Balance";
 import {View} from "./View";
 import Emittery from "emittery";
 import {Order} from "./Order";
-import {getPricePrecision, getQuantityPrecision} from "../utils/currencyInfo";
+import {getPricePrecision, getQuantityPrecision, validQuantity} from "../utils/currencyInfo";
 import {decimalFloor} from "../utils/math";
 
 export class Bot {
@@ -36,20 +36,18 @@ export class Bot {
         await this.balance.init()
 
         this.strategyConfigs.forEach((strategyConfig) => {
-
             const pair = strategyConfig.asset + strategyConfig.base;
-            let pairBalance: PairBalance = {
-                b1: this.balance.bCurrent(strategyConfig.asset),
-                b2: this.balance.bCurrent(strategyConfig.base),
-                runningBase: this.strategyConfigs.length
-            }
-            log(`Trades ${pair}: ${pairBalance.b1}\t${pairBalance.b2}`);
+            let b1 = this.balance.bCurrent(strategyConfig.asset)
+            let b2 = this.balance.bCurrent(strategyConfig.base)
+            log(`Trades ${pair}: ${b1}\t${b2}`);
             let view = new View(emitter, strategyConfig.leverage)
             let order = new Order()
             order.closeOpenOrders(pair)
             // Precision
             const pricePrecision = getPricePrecision(pair, this.exchangeInfo);
             const quantityPrecision = getQuantityPrecision(pair, this.exchangeInfo);
+            log(`quantityPrecision ${pair}: ${quantityPrecision}`);
+            log(`quantityPrecision ${pair}: ${quantityPrecision}`);
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, candlesArray => {
                 this.trade(candlesArray.dataCandles,
@@ -59,32 +57,21 @@ export class Bot {
                     pair,
                     order,
                     candlesArray.currentPrice,
-                    pairBalance,
-                    this.exchangeInfo,
                 )
             })
         })
     }
 
-    async trade(
-        candlesArray, strategyConfig, pricePrecision,
-        quantityPrecision, pair, order,
-        currentPrice, pairBalance, exchangeInfo
-    ) {
+    async trade(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
         if (!order.hasPosition() && strategyConfig.buyStrategy(candlesArray)) {
-            await this.buy(candlesArray, strategyConfig,
-                quantityPrecision, pair, order,
-                currentPrice, pairBalance, exchangeInfo)
+            await this.buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice)
         }
         if (!order.hasPosition() && strategyConfig.sellStrategy(candlesArray)) {
             //TODO sell
         }
     }
 
-    async buy(candlesArray, strategyConfig,
-              quantityPrecision, pair, order,
-              currentPrice, pairBalance, exchangeInfo) {
-        const pricePrecision = getPricePrecision(pair, exchangeInfo);
+    async buy(candlesArray, strategyConfig, pricePrecision, quantityPrecision, pair, order, currentPrice) {
         // Calculate TP and SL
         let {takeProfits, stopLoss} = strategyConfig.exitStrategy
             ? strategyConfig.exitStrategy(
@@ -92,7 +79,7 @@ export class Bot {
                 candlesArray,
                 pricePrecision,
                 OrderSide.BUY,
-                exchangeInfo
+                this.exchangeInfo
             )
             : {takeProfits: [], stopLoss: null};
         // Calculate the quantity for the position according to the risk management of the strategy
@@ -100,20 +87,22 @@ export class Bot {
             asset: strategyConfig.asset,
             base: strategyConfig.base,
             balance: strategyConfig.allowPyramiding
-                ? Number(pairBalance.b1)
-                : Number(pairBalance.b2),
+                ? Number(this.balance.bCurrent(strategyConfig.asset))
+                : Number(this.balance.bCurrent(strategyConfig.base)),
             risk: strategyConfig.risk,
             enterPrice: currentPrice,
             stopLossPrice: stopLoss,
-            exchangeInfo: exchangeInfo
+            exchangeInfo: this.exchangeInfo
         });
+        quantity = validQuantity(quantity, pair, this.exchangeInfo)
 
-        log(`${pair} taker buy ${String(quantity)}`);
-        order.newOrder(binanceClient, pair, String(quantity), OrderSide.BUY, OrderType.MARKET).then(() => {
+        log(`${pair} taker buy1 ${String(quantity)}`);
+        log(`${pair} taker buy2 ${String(decimalFloor(quantity, quantityPrecision))}`);
+
+        order.newOrder(binanceClient, pair, String(decimalFloor(quantity, quantityPrecision)), OrderSide.BUY, OrderType.MARKET).then(() => {
             if (takeProfits.length > 0) {
                 // Create the take profit orders
                 takeProfits.forEach(({price, quantityPercentage}) => {
-                    // TODO TAKE_PROFIT_LIMIT
                     log(`${pair} sell maker profit`);
                     order.newOrder(binanceClient, pair, String(decimalFloor(quantity * quantityPercentage, quantityPrecision)), OrderSide.SELL, OrderType.LIMIT, price).catch(error);
                 });

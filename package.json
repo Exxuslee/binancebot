@@ -4,7 +4,7 @@
   "description": "binance bot",
   "main": "src/index.ts",
   "scripts": {
-    "start": "nodemon ./build/main/server.js",
+    "start": "nodemon ./build/server.js",
     "build": "tsc"
   },
   "keywords": [],
