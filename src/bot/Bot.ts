@@ -143,7 +143,7 @@ export class Bot {
             exchangeInfo: this.exchangeInfo
         });
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
-        stopLoss = validPrice(stopLoss, pair, this.exchangeInfo)
+        stopLoss = validPrice(stopLoss)
 
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.setProfit(takeProfits[0].price)

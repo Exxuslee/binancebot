@@ -11,23 +11,19 @@ export function validQuantity(
     exchangeInfo: ExchangeInfo
 ): number {
     const rules = getLotSizeQuantityRules(pair, exchangeInfo);
-    let out = rules.minQty
-    if (Math.abs(quantity) >= rules.maxQty) out = rules.maxQty
-    if (rules.stepSize > 0) {
+    let out = Number(rules.minQty)
+    if (Math.abs(quantity) >= Number(rules.maxQty)) return Number(rules.maxQty)
+    if (Number(rules.stepSize) > 0) {
         let n = Math.round(quantity / rules.stepSize)
-        out = rules.stepSize * n
+        out = n * rules.stepSize
     }
-    return decimalFloor(out, getQuantityPrecision(pair, exchangeInfo))
+    return out
 }
 
 export function validPrice(
     price: number,
-    pair: string,
-    exchangeInfo: ExchangeInfo
 ): number {
-    let tickSize = getTickSize(pair, exchangeInfo);
-    let n = Math.round(price / tickSize)
-    return decimalFloor(tickSize * n, getPricePrecision(pair, exchangeInfo))
+    return decimalFloor(price, 2)
 }
 
 /**
