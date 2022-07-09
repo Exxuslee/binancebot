@@ -29,9 +29,9 @@ const strategy = (
     }]
 
     let rawStopLoss = side === OrderSide.BUY
-        ? Math.min(candles[0].low, candles[1].low, candles[2].low, candles[3].low) * 0.90
-        : Math.max(candles[0].high, candles[1].high, candles[2].high, candles[3].high) * 1.1
-    let stopLoss = validPrice(rawStopLoss, options.pair, exchangeInfo)
+        ? Math.min(candles[0].low, candles[1].low, candles[2].low, candles[3].low) * 0.96
+        : Math.max(candles[0].high, candles[1].high, candles[2].high, candles[3].high) * 1.04
+    let stopLoss = validPrice(+rawStopLoss.toFixed(2), options.pair, exchangeInfo)
 
     return {takeProfits, stopLoss};
 };

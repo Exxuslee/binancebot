@@ -1,5 +1,13 @@
 import {ExchangeInfo, OrderSide, OrderType} from 'binance-api-node';
-import {error, log, logBuySellExecutionOrder, logStopExecutionOrder} from '../utils/log';
+import {
+    error,
+    log,
+    logBuySellExecutionOrder,
+    logStart,
+    logStop,
+    logStopExecutionOrder,
+    logStopLose
+} from '../utils/log';
 import {binanceClient} from '../init';
 import {Telegram} from '../telegram';
 import dayjs from 'dayjs';
@@ -58,18 +66,24 @@ export class Bot {
 
         // Start order BUY
         if (strategyConfig.buyStrategy(candles) && !order.getBull() && !order.getBear()) {
-            log(`${pair}: Start order BUY`)
-            if (order.getRelax()) order.setRelax(false)
+            if (order.getRelax()){
+                console.log(`${pair}: Not start order BUY - relax `)
+                order.setRelax(false)
+            }
             else {
+                console.log(`${pair}: Start order BUY`)
                 order.setBull(true)
                 await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
             }
         }
         // Start order SELL
         if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBull()) {
-            log(`${pair}: Start order SELL`)
-            if (order.getRelax()) order.setRelax(false)
+            if (order.getRelax()) {
+                console.log(`${pair}: Not start order SELL - relax `)
+                order.setRelax(false)
+            }
             else {
+                console.log(`${pair}: Start order SELL`)
                 order.setBear(true)
                 await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
             }
@@ -77,21 +91,21 @@ export class Bot {
 
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL() > currentPrice) {
-            log(`${pair}: Clear BUY by stop-loss`)
+            logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceSL())
             order.setRelax(true)
             order.setBull(false)
         }
 
         // Clear SELL by stop-loss
         if (order.getBear() && order.getPriceSL() < currentPrice) {
-            log(`${pair}: Clear SELL by stop-loss`)
+            logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceSL())
             order.setRelax(true)
             order.setBear(false)
         }
 
         // Stop order BUY
         if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()) {
-            log(`${pair}: Stop order BUY`)
+            console.log(`${pair}: Stop order BUY`)
             order.setBull(false)
             order.setRelax(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
@@ -99,7 +113,7 @@ export class Bot {
 
         // Stop order SELL
         if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && currentPrice < order.getProfit()) {
-            log(`${pair}: Stop order SELL`)
+            console.log(`${pair}: Stop order SELL`)
             order.setBear(false)
             order.setRelax(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
@@ -134,7 +148,7 @@ export class Bot {
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.setProfit(takeProfits)
             order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
-            logBuySellExecutionOrder(orderSide, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
+            logStart(pair, currentPrice, quantity, OrderSide.BUY, takeProfits, stopLoss)
         }).catch(error);
     }
 
@@ -142,7 +156,7 @@ export class Bot {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.closeOpenOrders(pair).catch(error);
-            logStopExecutionOrder(orderSide, strategyConfig.asset, strategyConfig.base, currentPrice, quantity);
+            logStop(pair, currentPrice, orderSide, order.getProfit())
         }).catch(error);
     }
 }
