@@ -90,7 +90,7 @@ export class Bot {
         }
 
         // Stop order BUY
-        if (order.getBul() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()) {
+        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()) {
             log(`${pair}: Stop order BUY`)
             order.setBull(false)
             order.setRelax(true)
