@@ -91,11 +91,11 @@ export class Order {
     }
 
     getPriceSL() {
-        return this.longStopLoss
+        return this.priceSL
     }
 
     getSizeSL() {
-        return this.shortStopLoss
+        return this.sizeSL
     }
 
     setRelax(ok: boolean) {

@@ -68,7 +68,7 @@ export class View {
         if (this.candleRage.length > 20) {
             this.emitter.emit(aggTrade.symbol, {
                 dataCandles: this.candleRage,
-                currentPrice: aggTrade.price
+                currentPrice: Number(aggTrade.price)
             })
             this.candleRage.pop()
         }

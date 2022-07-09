@@ -18,7 +18,7 @@ export const config: AbstractStrategyConfig = (hyperParameters) =>
         base: 'USDT',
         risk: 0.01,
         //leverage: 0.0375,
-        leverage: 0.001,
+        leverage: 0.002,
         loopInterval: CandleChartInterval.ONE_MINUTE,
         indicatorIntervals: [CandleChartInterval.FIVE_MINUTES],
         exitStrategy: (price, candles, pricePrecision, side, exchangeInfo) =>

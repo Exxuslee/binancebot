@@ -121,8 +121,8 @@ export class Bot {
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {
-        let reverseOrder = (orderSide === OrderSide.BUY) ? OrderSide.BUY : OrderSide.SELL
-        let {takeProfits, stopLoss} = strategyConfig.exitStrategy
+        let reverseOrder = (orderSide === OrderSide.BUY) ? OrderSide.SELL : OrderSide.BUY
+        let {takeProfits, stopLoss} = await strategyConfig.exitStrategy
             ? strategyConfig.exitStrategy(
                 currentPrice,
                 candlesArray,
@@ -146,9 +146,9 @@ export class Bot {
         stopLoss = validPrice(stopLoss, pair, this.exchangeInfo)
 
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
-            order.setProfit(takeProfits)
+            order.setProfit(takeProfits[0].price)
             order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
-            logStart(pair, currentPrice, quantity, OrderSide.BUY, takeProfits, stopLoss)
+            logStart(pair, currentPrice, quantity, OrderSide.BUY, takeProfits[0].price, stopLoss)
         }).catch(error);
     }
 

@@ -7,7 +7,7 @@ interface Options {
 }
 
 const defaultOptions: Options = {
-    doubleFee: 0.15,
+    doubleFee: 0.002,
     pair: "BTCUSDT"
 };
 
@@ -20,8 +20,8 @@ const strategy = (
     options = defaultOptions
 ) => {
     let rawProfits = side === OrderSide.BUY
-        ? price + price * options.doubleFee
-        : price - price * options.doubleFee
+        ? (price + price * options.doubleFee)
+        : (price - price * options.doubleFee)
 
     let takeProfits = [{
         price: validPrice(rawProfits, options.pair, exchangeInfo),
@@ -32,6 +32,8 @@ const strategy = (
         ? Math.min(candles[0].low, candles[1].low, candles[2].low, candles[3].low) * 0.96
         : Math.max(candles[0].high, candles[1].high, candles[2].high, candles[3].high) * 1.04
     let stopLoss = validPrice(+rawStopLoss.toFixed(2), options.pair, exchangeInfo)
+
+    console.log('profit', takeProfits[0].price)
 
     return {takeProfits, stopLoss};
 };
