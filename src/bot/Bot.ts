@@ -76,7 +76,7 @@ export class Bot {
         }
 
         // Clear BUY by stop-loss
-        if (order.getBull() && order.getPriceSL().price > currentPrice) {
+        if (order.getBull() && order.getPriceSL() > currentPrice) {
             log(`${pair}: Clear BUY by stop-loss`)
             order.setRelax(true)
             order.setBull(false)
