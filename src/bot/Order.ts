@@ -7,26 +7,32 @@ export class Order {
     private shortStopLoss;
     private iBull;
     private iBear;
+    private relax;
+    private priceSL;
+    private sizeSL
 
     constructor() {
         this.longStopLoss = null
         this.shortStopLoss = null
         this.iBull = false
         this.iBear = false
+        this.relax = false
+        this.priceSL = null
+        this.sizeSL = null
     }
 
     async closeOpenOrders(pair: string) {
         let orders = await binanceClient.openOrders({symbol: pair})
         if (orders.length) {
             log(`Close all open orders for the pair ${pair}`);
+            this.updateSL(null, null)
             await binanceClient.cancelOpenOrders({symbol: pair})
         }
     }
 
     async viewOpenOrders(pair: string) {
         let orders = await binanceClient.openOrders({symbol: pair})
-        console.log("ord", orders)
-
+        console.log("orders:", orders)
     }
 
     async newOrder(
@@ -52,7 +58,7 @@ export class Order {
                 symbol: pair,
                 quantity: String(quantity),
                 price: String(price)
-            })
+            }).then(() => this.updateSL(price, quantity))
         else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
             this.longStopLoss = await binanceClient.order({
                 side: orderSide,
@@ -60,11 +66,11 @@ export class Order {
                 symbol: pair,
                 quantity: String(quantity),
                 price: String(price)
-            })
+            }).then(() => this.updateSL(price, quantity))
         else throw ('Unknown type & OrderSide')
     }
 
-    getBul() {
+    getBull() {
         return this.iBull
     }
 
@@ -74,25 +80,32 @@ export class Order {
 
     setBull(ok: boolean) {
         this.iBull = ok
+        if (!ok) this.updateSL(null, null)
     }
 
     setBear(ok: boolean) {
         this.iBear = ok
+        if (!ok) this.updateSL(null, null)
     }
 
-    getLong() {
+    getPriceSL() {
         return this.longStopLoss
     }
 
-    getShort() {
+    getSizeSL() {
         return this.shortStopLoss
     }
 
-    setLong() {
-        this.longStopLoss = null
+    setRelax(ok: boolean) {
+        this.relax = ok
     }
 
-    setShort() {
-        this.shortStopLoss = null
+    getRelax() {
+        return this.relax
+    }
+
+    private updateSL(prise: number, quantity: number) {
+        this.priceSL = prise
+        this.sizeSL = quantity
     }
 }

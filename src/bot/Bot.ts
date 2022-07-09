@@ -56,17 +56,48 @@ export class Bot {
 
     async trade(candles, strategyConfig, pair, order, currentPrice) {
 
-        if (order.getLong() === null && strategyConfig.buyStrategy(candles) && !order.getBul()) {
-            order.setBull(true)
-            await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
+        // Start order BUY
+        if (strategyConfig.buyStrategy(candles) && !order.getBull() && !order.getBear()) {
+            if (order.getRelax()) order.setRelax(false)
+            else {
+                order.setBull(true)
+                await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
+            }
         }
-        if (order.getShort() === null && strategyConfig.sellStrategy(candles) && !order.getBear()) {
-            order.setBear(true)
-            await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
+        // Start order SELL
+        if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBull()) {
+            if (order.getRelax()) order.setRelax(false)
+            else {
+                order.setBear(true)
+                await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
+            }
         }
 
-        if (order.getLong() !== null) if (+order.getLong().price > currentPrice) order.setLong()
-        if (order.getShort() !== null) if (+order.getShort().price < currentPrice) order.setShort()
+        // Clear BUY by stop-loss
+        if (order.getBull() && order.getPriceSL().price > currentPrice) {
+            order.setRelax(true)
+            order.setBull(false)
+        }
+
+        // Clear SELL by stop-loss
+        if (order.getBear() && order.getPriceSL() < currentPrice) {
+            order.setRelax(true)
+            order.setBear(false)
+        }
+
+        // Stop order BUY
+        if (strategyConfig.buyStrategy(candles) && !order.getBul() && !order.getBear()) {
+            order.setBull(false)
+            order.setRelax(true)
+            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
+        }
+        // Stop order SELL
+        if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBul()) {
+            order.setBear(false)
+            order.setRelax(true)
+            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
+        }
+
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {
