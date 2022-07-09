@@ -86,18 +86,18 @@ export class Bot {
         }
 
         // Stop order BUY
-        if (strategyConfig.buyStrategy(candles) && !order.getBul() && !order.getBear()) {
+        if (order.getBul() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()) {
             order.setBull(false)
             order.setRelax(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
         }
+
         // Stop order SELL
-        if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBul()) {
+        if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && currentPrice < order.getProfit()) {
             order.setBear(false)
             order.setRelax(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
         }
-
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {
@@ -126,6 +126,7 @@ export class Bot {
         stopLoss = validPrice(stopLoss, pair, this.exchangeInfo)
 
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
+            order.setProfit(takeProfits)
             order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
             logBuySellExecutionOrder(orderSide, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);

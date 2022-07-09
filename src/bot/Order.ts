@@ -10,6 +10,7 @@ export class Order {
     private relax;
     private priceSL;
     private sizeSL
+    private priceProfit
 
     constructor() {
         this.longStopLoss = null
@@ -19,6 +20,7 @@ export class Order {
         this.relax = false
         this.priceSL = null
         this.sizeSL = null
+        this.priceProfit = null
     }
 
     async closeOpenOrders(pair: string) {
@@ -107,5 +109,13 @@ export class Order {
     private updateSL(prise: number, quantity: number) {
         this.priceSL = prise
         this.sizeSL = quantity
+    }
+
+    setProfit(prise: number) {
+        this.priceProfit = prise
+    }
+
+    getProfit() {
+        return this.priceProfit
     }
 }
