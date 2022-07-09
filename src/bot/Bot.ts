@@ -1,5 +1,5 @@
 import {ExchangeInfo, OrderSide, OrderType} from 'binance-api-node';
-import {error, log, logBuySellExecutionOrder} from '../utils/log';
+import {error, log, logBuySellExecutionOrder, logStopExecutionOrder} from '../utils/log';
 import {binanceClient} from '../init';
 import {Telegram} from '../telegram';
 import dayjs from 'dayjs';
@@ -70,7 +70,7 @@ export class Bot {
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {
-        let banOrder = (orderSide === OrderSide.BUY) ? OrderSide.BUY : OrderSide.SELL
+        let reverseOrder = (orderSide === OrderSide.BUY) ? OrderSide.BUY : OrderSide.SELL
         let {takeProfits, stopLoss} = strategyConfig.exitStrategy
             ? strategyConfig.exitStrategy(
                 currentPrice,
@@ -95,12 +95,16 @@ export class Bot {
         stopLoss = validPrice(stopLoss, pair, this.exchangeInfo)
 
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
-            order.newOrder(binanceClient, pair, quantity, banOrder, OrderType.LIMIT, stopLoss).catch(error);
+            order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
             logBuySellExecutionOrder(orderSide, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
     }
 
-    async stopSignal() {
-
+    async stopSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide, quantity) {
+        quantity = validQuantity(quantity, pair, this.exchangeInfo)
+        await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
+            order.closeOpenOrders(pair).catch(error);
+            logStopExecutionOrder(orderSide, strategyConfig.asset, strategyConfig.base, currentPrice, quantity);
+        }).catch(error);
     }
 }

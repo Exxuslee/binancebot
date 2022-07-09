@@ -63,3 +63,24 @@ export function logBuySellExecutionOrder(
 
   log([introPhrase, tp, sl].join(' | '));
 }
+
+/**
+* Function to log the message when an order is opened
+* @param orderSide
+* @param asset
+* @param base
+* @param price
+* @param quantity
+*/
+export function logStopExecutionOrder(
+    orderSide: OrderSide,
+    asset: string,
+    base: string,
+    price: number,
+    quantity: string,
+) {
+  let introPhrase = `Close a ${
+      orderSide === OrderSide.BUY ? 'long' : 'short'
+  } position on ${asset}${base} at the price ${price} with a size of ${quantity}${asset}`;
+  log(introPhrase);
+}
