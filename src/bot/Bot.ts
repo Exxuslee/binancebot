@@ -106,17 +106,17 @@ export class Bot {
         // Stop order BUY
         if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()) {
             console.log(`${pair}: Stop order BUY`)
+            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBull(false)
             order.setRelax(true)
-            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
         }
 
         // Stop order SELL
         if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && currentPrice < order.getProfit()) {
             console.log(`${pair}: Stop order SELL`)
+            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBear(false)
             order.setRelax(true)
-            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
         }
     }
 

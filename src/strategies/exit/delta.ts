@@ -33,8 +33,6 @@ const strategy = (
         : Math.max(candles[0].high, candles[1].high, candles[2].high, candles[3].high) * 1.04
     let stopLoss = validPrice(rawStopLoss)
 
-    console.log('stopLoss', stopLoss)
-
     return {takeProfits, stopLoss};
 };
 
