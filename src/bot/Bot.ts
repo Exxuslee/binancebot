@@ -58,6 +58,7 @@ export class Bot {
 
         // Start order BUY
         if (strategyConfig.buyStrategy(candles) && !order.getBull() && !order.getBear()) {
+            log(`${pair}: Start order BUY`)
             if (order.getRelax()) order.setRelax(false)
             else {
                 order.setBull(true)
@@ -66,6 +67,7 @@ export class Bot {
         }
         // Start order SELL
         if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBull()) {
+            log(`${pair}: Start order SELL`)
             if (order.getRelax()) order.setRelax(false)
             else {
                 order.setBear(true)
@@ -75,29 +77,33 @@ export class Bot {
 
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL().price > currentPrice) {
+            log(`${pair}: Clear BUY by stop-loss`)
             order.setRelax(true)
             order.setBull(false)
         }
 
         // Clear SELL by stop-loss
         if (order.getBear() && order.getPriceSL() < currentPrice) {
+            log(`${pair}: Clear SELL by stop-loss`)
             order.setRelax(true)
             order.setBear(false)
         }
 
         // Stop order BUY
-        if (strategyConfig.buyStrategy(candles) && !order.getBul() && !order.getBear()) {
+        if (order.getBul() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()) {
+            log(`${pair}: Stop order BUY`)
             order.setBull(false)
             order.setRelax(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
         }
+
         // Stop order SELL
-        if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBul()) {
+        if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && currentPrice < order.getProfit()) {
+            log(`${pair}: Stop order SELL`)
             order.setBear(false)
             order.setRelax(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
         }
-
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {
@@ -126,6 +132,7 @@ export class Bot {
         stopLoss = validPrice(stopLoss, pair, this.exchangeInfo)
 
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
+            order.setProfit(takeProfits)
             order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
             logBuySellExecutionOrder(orderSide, strategyConfig.asset, strategyConfig.base, currentPrice, quantity, takeProfits, stopLoss);
         }).catch(error);
