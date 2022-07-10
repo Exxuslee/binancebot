@@ -39,7 +39,7 @@ export class Order {
         type,
         price: number,
     ) {
-        console.log(pair, orderSide, type, price, quantity)
+        //console.log(pair, orderSide, type, price, quantity)
         if (type === OrderType.MARKET)
             await binanceClient.orderTest({
                 side: orderSide,

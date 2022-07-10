@@ -47,9 +47,11 @@ export class Bot {
             emitter.on(pair, candlesArray => {
                 let temp = ''
                 candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
-                console.log(pair, temp, candlesArray.currentPrice, '|lh',
-                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
-                )
+                //if (candlesArray.dataCandles[0].isBuyerMaker && candlesArray.dataCandles[0].isBuyerMaker
+                //|| !candlesArray.dataCandles[0].isBuyerMaker && !candlesArray.dataCandles[0].isBuyerMaker)
+                //    console.log(pair, temp, candlesArray.currentPrice, '|lh',
+                //    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
+                //)
 
                 this.trade(candlesArray.dataCandles,
                     strategyConfig,
@@ -88,7 +90,7 @@ export class Bot {
                     console.log(`${pair}: Not start order BUY - relax `)
                     order.setRelax(false)
                 } else {
-                    console.log(`${pair}: Start order BUY`)
+                    //console.log(`${pair}: Start order BUY`)
                     order.setTrading(true)
                     await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
                     order.setBull(true)
@@ -102,7 +104,7 @@ export class Bot {
                     console.log(`${pair}: Not start order SELL - relax `)
                     order.setRelax(false)
                 } else {
-                    console.log(`${pair}: Start order SELL`)
+                    //console.log(`${pair}: Start order SELL`)
                     order.setTrading(true)
                     await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
                     order.setBear(true)
@@ -114,7 +116,7 @@ export class Bot {
         // Stop order BUY
         if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
             && !order.getTrading()) {
-            console.log(`${pair}: Stop order BUY`)
+            //console.log(`${pair}: Stop order BUY`)
             order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBull(false)
@@ -126,7 +128,7 @@ export class Bot {
         // Stop order SELL
         if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
         ) {
-            console.log(`${pair}: Stop order SELL`)
+            //console.log(`${pair}: Stop order SELL`)
             order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBear(false)
@@ -174,10 +176,11 @@ export class Bot {
     }
 
     async stopSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide, quantity) {
+        let reverseOrder = (orderSide === OrderSide.BUY) ? OrderSide.SELL : OrderSide.BUY
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, orderSide, order.getProfit())
+            logStop(pair, currentPrice, reverseOrder, order.getProfit())
         }).catch(error);
     }
 
