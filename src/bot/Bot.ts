@@ -116,7 +116,7 @@ export class Bot {
         }
 
         // Stop order SELL
-        if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && currentPrice < order.getProfit()
+        if (order.getBear() && !(candles[0].isBuyerMaker) && !(candles[1].isBuyerMaker) && currentPrice < order.getProfit()
             && !order.getTrading()) {
             console.log(`${pair}: Stop order SELL`)
             order.setTrading(true)

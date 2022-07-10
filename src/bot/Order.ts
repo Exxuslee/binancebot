@@ -29,8 +29,8 @@ export class Order {
         let orders = await binanceClient.openOrders({symbol: pair})
         if (orders.length) {
             log(`Close all open orders for the pair ${pair}`);
-            this.updateSL(null, null)
             await binanceClient.cancelOpenOrders({symbol: pair})
+            this.updateSL(null, null)
         }
     }
 
