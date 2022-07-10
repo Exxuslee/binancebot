@@ -11,6 +11,7 @@ export class Order {
     private priceSL;
     private sizeSL
     private priceProfit
+    private nowTrading
 
     constructor() {
         this.longStopLoss = null
@@ -18,6 +19,7 @@ export class Order {
         this.iBull = false
         this.iBear = false
         this.relax = false
+        this.nowTrading = false
         this.priceSL = null
         this.sizeSL = null
         this.priceProfit = null
@@ -47,14 +49,14 @@ export class Order {
     ) {
         console.log(pair, orderSide, type, price, quantity)
         if (type === OrderType.MARKET)
-            await binanceClient.order({
+            await binanceClient.orderTest({
                 side: orderSide,
                 type: type,
                 symbol: pair,
                 quantity: String(quantity)
             })
         else if (type === OrderType.LIMIT && orderSide === OrderSide.BUY)
-            this.shortStopLoss = await binanceClient.order({
+            this.shortStopLoss = await binanceClient.orderTest({
                 side: orderSide,
                 type: type,
                 symbol: pair,
@@ -62,7 +64,7 @@ export class Order {
                 price: String(price)
             }).then(() => this.updateSL(price, quantity))
         else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
-            this.longStopLoss = await binanceClient.order({
+            this.longStopLoss = await binanceClient.orderTest({
                 side: orderSide,
                 type: type,
                 symbol: pair,
@@ -82,12 +84,12 @@ export class Order {
 
     setBull(ok: boolean) {
         this.iBull = ok
-        if (!ok) this.updateSL(null, null)
+//        if (!ok) this.updateSL(null, null)
     }
 
     setBear(ok: boolean) {
         this.iBear = ok
-        if (!ok) this.updateSL(null, null)
+  //      if (!ok) this.updateSL(null, null)
     }
 
     getPriceSL() {
@@ -117,5 +119,13 @@ export class Order {
 
     getProfit() {
         return this.priceProfit
+    }
+
+    setTrading(ok: boolean) {
+        this.nowTrading = ok
+    }
+
+    getTrading() {
+        return this.nowTrading
     }
 }

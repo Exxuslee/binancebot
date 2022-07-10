@@ -1,13 +1,5 @@
 import {ExchangeInfo, OrderSide, OrderType} from 'binance-api-node';
-import {
-    error,
-    log,
-    logBuySellExecutionOrder,
-    logStart,
-    logStop,
-    logStopExecutionOrder,
-    logStopLose
-} from '../utils/log';
+import {error, log, logStart, logStop, logStopLose} from '../utils/log';
 import {binanceClient} from '../init';
 import {Telegram} from '../telegram';
 import dayjs from 'dayjs';
@@ -65,27 +57,29 @@ export class Bot {
     async trade(candles, strategyConfig, pair, order, currentPrice) {
 
         // Start order BUY
-        if (strategyConfig.buyStrategy(candles) && !order.getBull() && !order.getBear()) {
-            if (order.getRelax()){
+        if (strategyConfig.buyStrategy(candles) && !order.getBull() && !order.getBear() && !order.getTrading()) {
+            if (order.getRelax()) {
                 console.log(`${pair}: Not start order BUY - relax `)
                 order.setRelax(false)
-            }
-            else {
+            } else {
                 console.log(`${pair}: Start order BUY`)
-                order.setBull(true)
+                order.setTrading(true)
                 await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
+                order.setBull(true)
+                order.setTrading(false)
             }
         }
         // Start order SELL
-        if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBull()) {
+        if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBull() && !order.getTrading()) {
             if (order.getRelax()) {
                 console.log(`${pair}: Not start order SELL - relax `)
                 order.setRelax(false)
-            }
-            else {
+            } else {
                 console.log(`${pair}: Start order SELL`)
-                order.setBear(true)
+                order.setTrading(true)
                 await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
+                order.setBull(true)
+                order.setTrading(false)
             }
         }
 
@@ -104,19 +98,25 @@ export class Bot {
         }
 
         // Stop order BUY
-        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()) {
+        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
+            && !order.getTrading()) {
             console.log(`${pair}: Stop order BUY`)
+            order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBull(false)
             order.setRelax(true)
+            order.setTrading(false)
         }
 
         // Stop order SELL
-        if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && currentPrice < order.getProfit()) {
+        if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && currentPrice < order.getProfit()
+            && !order.getTrading()) {
             console.log(`${pair}: Stop order SELL`)
+            order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBear(false)
             order.setRelax(true)
+            order.setTrading(false)
         }
     }
 
