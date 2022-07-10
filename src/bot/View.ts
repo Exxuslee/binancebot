@@ -19,16 +19,21 @@ export class View {
 
         if (current > this.currentRage.low + this.currentRage.rage) {
             // new candle
+            // no high || low candle
             this.currentRage.close = this.currentRage.low + this.currentRage.rage
             this.currentRage.isBuyerMaker = false
+            this.currentRage.high = this.currentRage.low + this.currentRage.rage
+            if (current < this.currentRage.low) this.currentRage.low = current
             this.finish(aggTrade)
         } else if (current < this.currentRage.high - this.currentRage.rage) {
             // new candle
             this.currentRage.close = this.currentRage.high - this.currentRage.rage
             this.currentRage.isBuyerMaker = true
+            this.currentRage.low = this.currentRage.high - this.currentRage.rage
             this.finish(aggTrade)
         } else {
             // old candle
+            // no high || low candle
             this.currentRage.aggTrades++
             this.currentRage.trades += aggTrade.lastId - aggTrade.lastId + 1
             if (current > this.currentRage.high) this.currentRage.high = current
@@ -37,10 +42,12 @@ export class View {
             this.currentRage.close = current
             this.currentRage.isBuyerMaker = this.currentRage.open > current;
         }
+        if (current > this.currentRage.high) this.currentRage.high = current
+        if (current < this.currentRage.low) this.currentRage.low = current
     }
 
     private init(aggTrade: AggregatedTrade) {
-        let percent = Number(aggTrade.price) * this.rage / 100
+        let percent = Number(aggTrade.price) * this.rage
 
         this.currentRage = {
             symbol: aggTrade.symbol,
@@ -61,11 +68,8 @@ export class View {
     private finish(aggTrade) {
         this.currentRage.closeTime = new Date(aggTrade.timestamp)
         this.candleRage.unshift(this.currentRage)
-        // let temp = ''
-        // this.candleRage.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
-        // console.log(aggTrade.symbol, temp)
         this.init(aggTrade)
-        if (this.candleRage.length > 20) {
+        if (this.candleRage.length > 12) {
             this.emitter.emit(aggTrade.symbol, {
                 dataCandles: this.candleRage,
                 currentPrice: Number(aggTrade.price)

@@ -44,6 +44,13 @@ export class Bot {
             order.closeOpenOrders(pair)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, candlesArray => {
+                let temp = ''
+                candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
+                console.log(pair, temp, candlesArray.currentPrice, '|',
+                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high, '|',
+                    candlesArray.dataCandles[0].open, candlesArray.dataCandles[0].close,
+                )
+
                 this.trade(candlesArray.dataCandles,
                     strategyConfig,
                     pair,
@@ -57,29 +64,33 @@ export class Bot {
     async trade(candles, strategyConfig, pair, order, currentPrice) {
 
         // Start order BUY
-        if (strategyConfig.buyStrategy(candles) && !order.getBull() && !order.getBear() && !order.getTrading()) {
+        if (!order.getBull() && !order.getBear() && !order.getTrading()) {
             if (order.getRelax()) {
-                console.log(`${pair}: Not start order BUY - relax `)
-                order.setRelax(false)
-            } else {
-                console.log(`${pair}: Start order BUY`)
-                order.setTrading(true)
-                await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
-                order.setBull(true)
-                order.setTrading(false)
+                if (strategyConfig.buyStrategy(candles)) {
+                    console.log(`${pair}: Not start order BUY - relax `)
+                    order.setRelax(false)
+                } else {
+                    console.log(`${pair}: Start order BUY`)
+                    order.setTrading(true)
+                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
+                    order.setBull(true)
+                    order.setTrading(false)
+                }
             }
         }
         // Start order SELL
-        if (strategyConfig.sellStrategy(candles) && !order.getBear() && !order.getBull() && !order.getTrading()) {
+        if (!order.getBear() && !order.getBull() && !order.getTrading()) {
             if (order.getRelax()) {
-                console.log(`${pair}: Not start order SELL - relax `)
-                order.setRelax(false)
-            } else {
-                console.log(`${pair}: Start order SELL`)
-                order.setTrading(true)
-                await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
-                order.setBear(true)
-                order.setTrading(false)
+                if (strategyConfig.sellStrategy(candles)) {
+                    console.log(`${pair}: Not start order SELL - relax `)
+                    order.setRelax(false)
+                } else {
+                    console.log(`${pair}: Start order SELL`)
+                    order.setTrading(true)
+                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
+                    order.setBear(true)
+                    order.setTrading(false)
+                }
             }
         }
 
