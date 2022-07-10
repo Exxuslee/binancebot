@@ -78,7 +78,7 @@ export class Bot {
                 console.log(`${pair}: Start order SELL`)
                 order.setTrading(true)
                 await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
-                order.setBull(true)
+                order.setBear(true)
                 order.setTrading(false)
             }
         }
@@ -148,7 +148,7 @@ export class Bot {
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.setProfit(takeProfits[0].price)
             order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
-            logStart(pair, currentPrice, quantity, OrderSide.BUY, takeProfits[0].price, stopLoss)
+            logStart(pair, currentPrice, quantity, orderSide, takeProfits[0].price, stopLoss)
         }).catch(error);
     }
 

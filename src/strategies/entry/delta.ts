@@ -32,6 +32,8 @@ export const isBuySignal = (
     let bull2 = values[values.length - 1] > candles[0].close
     let bull3 = values[values.length - 1] > candles[1].close
 
+    if (bull1 && bull2 && bull3) console.log(values[values.length - 1], candles[0].close, candles[1].close)
+
     return bull1 && bull2 && bull3;
 
 
@@ -54,5 +56,8 @@ export const isSellSignal = (
     let bear1 = candles[0].isBuyerMaker && candles[1].isBuyerMaker
     let bear2 = values[values.length - 1] < candles[0].close
     let bear3 = values[values.length - 1] < candles[1].close
+
+    if (bear1 && bear2 && bear3) console.log(values[values.length - 1], candles[0].close, candles[1].close)
+
     return bear1 && bear2 && bear3
 };

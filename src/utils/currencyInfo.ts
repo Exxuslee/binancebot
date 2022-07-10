@@ -1,5 +1,5 @@
 import {ExchangeInfo} from 'binance-api-node';
-import {decimalCeil, decimalFloor, decimalRound} from './math';
+import {decimalCeil, decimalFloor} from './math';
 import {log} from "./log";
 
 /**
@@ -37,8 +37,13 @@ export function getMinOrderQuantity(
     exchangeInfo: ExchangeInfo
 ) {
     const precision = getQuantityPrecision(asset + base, exchangeInfo);
-    const minimumNotionalValue = 5; // threshold in USDT
+    const minimumNotionalValue = 10; // threshold in USDT
     return decimalCeil(minimumNotionalValue / basePrice, precision);
+
+    let min = exchangeInfo.symbols.find((symbol) => symbol.symbol === asset + base).filters.find((filter) => filter.filterType === 'MIN_NOTIONAL');
+    // @ts-ignore
+    let minNotional = Number(min.minNotional)
+    return minNotional
 }
 
 /**
