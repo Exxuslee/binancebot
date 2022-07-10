@@ -46,8 +46,8 @@ export class Bot {
             emitter.on(pair, candlesArray => {
                 let temp = ''
                 candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
-                console.log(pair, temp, candlesArray.currentPrice, '|',
-                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high, '|',
+                console.log(pair, temp, candlesArray.currentPrice, '|lh',
+                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high, '|oc',
                     candlesArray.dataCandles[0].open, candlesArray.dataCandles[0].close,
                 )
 

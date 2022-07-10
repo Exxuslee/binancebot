@@ -28,7 +28,7 @@ export const isBuySignal = (
         period: options.maPeriod,
     });
 
-    let bull1 = !candles[0].isBuyerMaker && !candles[1].isBuyerMaker
+    let bull1 = !(candles[0].isBuyerMaker) && !(candles[1].isBuyerMaker)
     let bull2 = values[values.length - 1] > candles[0].high
     let bull3 = values[values.length - 1] > candles[1].high
 
