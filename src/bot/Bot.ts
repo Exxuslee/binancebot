@@ -63,49 +63,45 @@ export class Bot {
 
     async trade(candles, strategyConfig, pair, order, currentPrice) {
 
-        // Start order BUY
-        if (!order.getBull() && !order.getBear() && !order.getTrading()) {
-            if (order.getRelax()) {
-                if (strategyConfig.buyStrategy(candles)) {
-                    console.log(`${pair}: Not start order BUY - relax `)
-                    order.setRelax(false)
-                } else {
-                    console.log(`${pair}: Start order BUY`)
-                    order.setTrading(true)
-                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
-                    order.setBull(true)
-                    order.setTrading(false)
-                }
-            }
-        }
-        // Start order SELL
-        if (!order.getBear() && !order.getBull() && !order.getTrading()) {
-            if (order.getRelax()) {
-                if (strategyConfig.sellStrategy(candles)) {
-                    console.log(`${pair}: Not start order SELL - relax `)
-                    order.setRelax(false)
-                } else {
-                    console.log(`${pair}: Start order SELL`)
-                    order.setTrading(true)
-                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
-                    order.setBear(true)
-                    order.setTrading(false)
-                }
-            }
-        }
-
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL() > currentPrice) {
             logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceSL())
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setBull(false)
         }
 
         // Clear SELL by stop-loss
         if (order.getBear() && order.getPriceSL() < currentPrice) {
             logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceSL())
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setBear(false)
+        }
+
+        // Start order BUY
+        if (!order.getBull() && !order.getBear() && !order.getTrading()) {
+                if (strategyConfig.buyStrategy(candles)) {
+                    //console.log(`${pair}: Not start order BUY - relax `)
+                    //order.setRelax(false)
+                //} else {
+                    console.log(`${pair}: Start order BUY`)
+                    order.setTrading(true)
+                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
+                    order.setBull(true)
+                    order.setTrading(false)
+                }
+        }
+        // Start order SELL
+        if (!order.getBear() && !order.getBull() && !order.getTrading()) {
+                if (strategyConfig.sellStrategy(candles)) {
+                    //console.log(`${pair}: Not start order SELL - relax `)
+                    //order.setRelax(false)
+                //} else {
+                    console.log(`${pair}: Start order SELL`)
+                    order.setTrading(true)
+                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
+                    order.setBear(true)
+                    order.setTrading(false)
+                }
         }
 
         // Stop order BUY
@@ -115,7 +111,7 @@ export class Bot {
             order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBull(false)
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setTrading(false)
         }
 
@@ -126,7 +122,7 @@ export class Bot {
             order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBear(false)
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setTrading(false)
         }
     }

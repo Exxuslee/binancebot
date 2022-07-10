@@ -37,7 +37,7 @@ export function getMinOrderQuantity(
     exchangeInfo: ExchangeInfo
 ) {
     const precision = getQuantityPrecision(asset + base, exchangeInfo);
-    const minimumNotionalValue = 10; // threshold in USDT
+    const minimumNotionalValue = 15; // threshold in USDT
     return decimalCeil(minimumNotionalValue / basePrice, precision);
 
     let min = exchangeInfo.symbols.find((symbol) => symbol.symbol === asset + base).filters.find((filter) => filter.filterType === 'MIN_NOTIONAL');

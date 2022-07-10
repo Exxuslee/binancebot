@@ -41,9 +41,9 @@ export class View {
             this.currentRage.volume += Number(aggTrade.quantity)
             this.currentRage.close = current
             this.currentRage.isBuyerMaker = this.currentRage.open > current;
+            if (current > this.currentRage.high) this.currentRage.high = current
+            if (current < this.currentRage.low) this.currentRage.low = current
         }
-        if (current > this.currentRage.high) this.currentRage.high = current
-        if (current < this.currentRage.low) this.currentRage.low = current
     }
 
     private init(aggTrade: AggregatedTrade) {
@@ -69,7 +69,7 @@ export class View {
         this.currentRage.closeTime = new Date(aggTrade.timestamp)
         this.candleRage.unshift(this.currentRage)
         this.init(aggTrade)
-        if (this.candleRage.length > 12) {
+        if (this.candleRage.length > 13) {
             this.emitter.emit(aggTrade.symbol, {
                 dataCandles: this.candleRage,
                 currentPrice: Number(aggTrade.price)

@@ -20,9 +20,9 @@ export class Order {
         this.iBear = false
         this.relax = false
         this.nowTrading = false
-        this.priceSL = null
-        this.sizeSL = null
-        this.priceProfit = null
+        // this.priceSL = null
+        // this.sizeSL = null
+        // this.priceProfit = null
     }
 
     async closeOpenOrders(pair: string) {
