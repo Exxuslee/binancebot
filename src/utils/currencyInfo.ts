@@ -5,11 +5,7 @@ import {log} from "./log";
 /**
  * @see https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#lot_size
  */
-export function validQuantity(
-    quantity: number,
-    pair: string,
-    exchangeInfo: ExchangeInfo
-): number {
+export function validQuantity(quantity: number, pair: string, exchangeInfo: ExchangeInfo): number {
     const rules = getLotSizeQuantityRules(pair, exchangeInfo);
     let out = Number(rules.minQty)
     if (Math.abs(quantity) >= Number(rules.maxQty)) return Number(rules.maxQty)
@@ -20,9 +16,7 @@ export function validQuantity(
     return decimalFloor(out, getQuantityPrecision(pair, exchangeInfo))
 }
 
-export function validPrice(
-    price: number,
-): number {
+export function validPrice(price: number): number {
     return decimalFloor(price, 2)
 }
 
@@ -30,12 +24,7 @@ export function validPrice(
  * Get the minimal quantity to trade with this pair according to the
  * Binance futures trading rules
  */
-export function getMinOrderQuantity(
-    asset: string,
-    base: string,
-    basePrice: number,
-    exchangeInfo: ExchangeInfo
-) {
+export function getMinOrderQuantity(asset: string, base: string, basePrice: number, exchangeInfo: ExchangeInfo) {
     const precision = getQuantityPrecision(asset + base, exchangeInfo);
     const minimumNotionalValue = 15; // threshold in USDT
     return decimalCeil(minimumNotionalValue / basePrice, precision);
@@ -51,10 +40,7 @@ export function getMinOrderQuantity(
  * @see https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#lot_size
  * @see https://www.binance.com/en/support/faq/360033161972
  */
-function getLotSizeQuantityRules(
-    pair: string,
-    exchangeInfo: ExchangeInfo
-) {
+function getLotSizeQuantityRules(pair: string, exchangeInfo: ExchangeInfo) {
     // @ts-ignore
     const {minQty, maxQty, stepSize} = exchangeInfo.symbols
         .find((symbol) => symbol.symbol === pair)
@@ -107,10 +93,7 @@ export function getTickSize(pair: string, exchangeInfo: ExchangeInfo) {
  * @param candles
  * @param sourceType
  */
-export function getCandleSourceType(
-    candles: CandleRage[],
-    sourceType: SourceType
-) {
+export function getCandleSourceType(candles: CandleRage[], sourceType: SourceType) {
     switch (sourceType) {
         case 'open':
             return candles.map((c) => c.open);
