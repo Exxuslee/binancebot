@@ -22,19 +22,19 @@ export const isBuySignal = (
         error('candles.length < options.maPeriod')
         return false;
     }
-    let reverse: CandleRage[] = candles
+    let reverseBull: CandleRage[] = JSON.parse(JSON.stringify(candles));
     const ma = getMAClass(options.maType);
-    const values = ma.calculate(reverse.reverse(), {
+    const values = ma.calculate(reverseBull.reverse(), {
         period: options.maPeriod,
     });
 
-    let bull1: boolean = candles[0].isBuyerMaker || candles[1].isBuyerMaker
+    let bull1: boolean = !candles[0].isBuyerMaker && !candles[1].isBuyerMaker
     let bull2: boolean = values[values.length - 1] > candles[0].high
     let bull3: boolean = values[values.length - 1] > candles[1].high
 
-    if (!bull1) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
+    if (bull1) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
 
-    return !bull1 && bull2 && bull3;
+    return bull1 && bull2 && bull3;
 
 
 };
@@ -47,9 +47,9 @@ export const isSellSignal = (
         error('candles.length < options.maPeriod')
         return false;
     }
-    let reverse: CandleRage[] = candles
+    let reverseBear: CandleRage[] = JSON.parse(JSON.stringify(candles));
     const ma = getMAClass(options.maType);
-    const values = ma.calculate(reverse.reverse(), {
+    const values = ma.calculate(reverseBear.reverse(), {
         period: options.maPeriod,
     });
 
