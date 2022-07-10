@@ -3,26 +3,18 @@ import {log} from "../utils/log";
 import {Binance, OrderSide, OrderType} from "binance-api-node";
 
 export class Order {
-    private longStopLoss;
-    private shortStopLoss;
-    private iBull;
-    private iBear;
-    private relax;
-    private priceSL;
-    private sizeSL
-    private priceProfit
-    private nowTrading
+    private _longStopLoss;
+    private _shortStopLoss;
+    private _iBull: boolean = false
+    private _iBear: boolean = false
+    private _relax: boolean = false
+    private _priceSL;
+    private _sizeSL
+    private _priceProfit
+    private _nowTrading: boolean = false
+    private _report = ''
 
     constructor() {
-        this.longStopLoss = null
-        this.shortStopLoss = null
-        this.iBull = false
-        this.iBear = false
-        this.relax = false
-        this.nowTrading = false
-        // this.priceSL = null
-        // this.sizeSL = null
-        // this.priceProfit = null
     }
 
     async closeOpenOrders(pair: string) {
@@ -56,7 +48,7 @@ export class Order {
                 quantity: String(quantity)
             })
         else if (type === OrderType.LIMIT && orderSide === OrderSide.BUY)
-            this.shortStopLoss = await binanceClient.orderTest({
+            this._shortStopLoss = await binanceClient.orderTest({
                 side: orderSide,
                 type: type,
                 symbol: pair,
@@ -64,7 +56,7 @@ export class Order {
                 price: String(price)
             }).then(() => this.updateSL(price, quantity))
         else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
-            this.longStopLoss = await binanceClient.orderTest({
+            this._longStopLoss = await binanceClient.orderTest({
                 side: orderSide,
                 type: type,
                 symbol: pair,
@@ -75,57 +67,67 @@ export class Order {
     }
 
     getBull() {
-        return this.iBull
+        return this._iBull
     }
 
     getBear() {
-        return this.iBear
+        return this._iBear
     }
 
     setBull(ok: boolean) {
-        this.iBull = ok
+        this._iBull = ok
 //        if (!ok) this.updateSL(null, null)
     }
 
     setBear(ok: boolean) {
-        this.iBear = ok
-  //      if (!ok) this.updateSL(null, null)
+        this._iBear = ok
+        //      if (!ok) this.updateSL(null, null)
     }
 
     getPriceSL() {
-        return this.priceSL
+        return this._priceSL
     }
 
     getSizeSL() {
-        return this.sizeSL
+        return this._sizeSL
     }
 
     setRelax(ok: boolean) {
-        this.relax = ok
+        this._relax = ok
     }
 
     getRelax() {
-        return this.relax
+        return this._relax
     }
 
     private updateSL(prise: number, quantity: number) {
-        this.priceSL = prise
-        this.sizeSL = quantity
+        this._priceSL = prise
+        this._sizeSL = quantity
     }
 
     setProfit(prise: number) {
-        this.priceProfit = prise
+        this._priceProfit = prise
     }
 
     getProfit() {
-        return this.priceProfit
+        return this._priceProfit
     }
 
     setTrading(ok: boolean) {
-        this.nowTrading = ok
+        this._nowTrading = ok
     }
 
     getTrading() {
-        return this.nowTrading
+        return this._nowTrading
+    }
+
+    setReport(ok: boolean) {
+        this._report = this._report + ok ? "1" : "0"
+    }
+
+    getReport() {
+        let data = (' ' + this._report).slice(1);
+        this._report = ''
+        return data
     }
 }

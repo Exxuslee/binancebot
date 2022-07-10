@@ -18,10 +18,14 @@ export class Balance {
         this.lastDayBalance = accountInfo.balances
     }
 
-    async update() {
+    async updateCurrent() {
         // Store account information to local
         let accountInfo = await binanceClient.accountInfo()
         this.currentBalance = accountInfo.balances
+    }
+
+    updateDay() {
+        this.lastDayBalance = this.currentBalance
     }
 
     bCurrent(base: String) {

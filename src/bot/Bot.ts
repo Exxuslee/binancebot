@@ -8,6 +8,7 @@ import {View} from "./View";
 import Emittery from "emittery";
 import {Order} from "./Order";
 import {getPricePrecision, validPrice, validQuantity} from "../utils/currencyInfo";
+import {sendDailyResult} from "../telegram/message";
 
 export class Bot {
     private strategyConfigs: StrategyConfig[];
@@ -47,8 +48,7 @@ export class Bot {
                 let temp = ''
                 candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
                 console.log(pair, temp, candlesArray.currentPrice, '|lh',
-                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high, '|oc',
-                    candlesArray.dataCandles[0].open, candlesArray.dataCandles[0].close,
+                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
                 )
 
                 this.trade(candlesArray.dataCandles,
@@ -68,6 +68,7 @@ export class Bot {
             logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceSL())
             order.setRelax(true)
             order.setBull(false)
+            order.setReport(false)
         }
 
         // Clear SELL by stop-loss
@@ -75,12 +76,15 @@ export class Bot {
             logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceSL())
             order.setRelax(true)
             order.setBear(false)
+            order.setReport(false)
         }
 
+        // Ready to start
         if (!order.getBull() && !order.getBear() && !order.getTrading()) {
+
             // Start order BUY
             if (strategyConfig.buyStrategy(candles) && !order.getRelax()) {
-                if (!order.getRelax()) {
+                if (order.getRelax()) {
                     console.log(`${pair}: Not start order BUY - relax `)
                     order.setRelax(false)
                 } else {
@@ -94,7 +98,7 @@ export class Bot {
 
             // Start order SELL
             if (strategyConfig.sellStrategy(candles) && !order.getRelax()) {
-                if (!order.getRelax()) {
+                if (order.getRelax()) {
                     console.log(`${pair}: Not start order SELL - relax `)
                     order.setRelax(false)
                 } else {
@@ -116,6 +120,7 @@ export class Bot {
             order.setBull(false)
             order.setRelax(true)
             order.setTrading(false)
+            order.setReport(true)
         }
 
         // Stop order SELL
@@ -127,6 +132,12 @@ export class Bot {
             order.setBear(false)
             order.setRelax(true)
             order.setTrading(false)
+            order.setReport(true)
+        }
+
+        // Report
+        if (order.getRelax()) {
+            await this.report(candles, strategyConfig, order)
         }
     }
 
@@ -168,5 +179,16 @@ export class Bot {
             order.closeOpenOrders(pair).catch(error);
             logStop(pair, currentPrice, orderSide, order.getProfit())
         }).catch(error);
+    }
+
+    async report(candles, strategyConfig, order) {
+        // Day change ?
+        let candleDay = dayjs(new Date(candles[0].closeTime)).format('DD/MM/YYYY');
+        if (candleDay !== this.currentDay) {
+            await this.balance.updateCurrent()
+            sendDailyResult(this.telegram, this.balance, strategyConfig.asset, order.getReport());
+            this.currentDay = candleDay;
+            this.balance.updateDay()
+        }
     }
 }
