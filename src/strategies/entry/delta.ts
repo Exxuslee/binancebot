@@ -7,7 +7,7 @@ interface Options {
 }
 
 const defaultOptions: Options = {
-    maPeriod: 12,
+    maPeriod: 10,
     maType: 'WMA',
 };
 
@@ -22,19 +22,19 @@ export const isBuySignal = (
         error('candles.length < options.maPeriod')
         return false;
     }
-
+    let reverse: CandleRage[] = candles
     const ma = getMAClass(options.maType);
-    const values = ma.calculate(candles.reverse(), {
+    const values = ma.calculate(reverse.reverse(), {
         period: options.maPeriod,
     });
 
-    let bull1 = !(candles[0].isBuyerMaker) && !(candles[1].isBuyerMaker)
-    let bull2 = values[values.length - 1] > candles[0].high
-    let bull3 = values[values.length - 1] > candles[1].high
+    let bull1: boolean = candles[0].isBuyerMaker || candles[1].isBuyerMaker
+    let bull2: boolean = values[values.length - 1] > candles[0].high
+    let bull3: boolean = values[values.length - 1] > candles[1].high
 
-    if (bull1) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
+    if (!bull1) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
 
-    return bull1 && bull2 && bull3;
+    return !bull1 && bull2 && bull3;
 
 
 };
@@ -47,16 +47,15 @@ export const isSellSignal = (
         error('candles.length < options.maPeriod')
         return false;
     }
-
-
+    let reverse: CandleRage[] = candles
     const ma = getMAClass(options.maType);
-    const values = ma.calculate(candles.reverse(), {
+    const values = ma.calculate(reverse.reverse(), {
         period: options.maPeriod,
     });
 
-    let bear1 = candles[0].isBuyerMaker && candles[1].isBuyerMaker
-    let bear2 = values[values.length - 1] < candles[0].low
-    let bear3 = values[values.length - 1] < candles[1].low
+    let bear1: boolean = candles[0].isBuyerMaker && candles[1].isBuyerMaker
+    let bear2: boolean = values[values.length - 1] < candles[0].low
+    let bear3: boolean = values[values.length - 1] < candles[1].low
 
     if (bear1) console.log('isSellSignal', values[values.length - 1], candles[0].low, candles[1].low)
 

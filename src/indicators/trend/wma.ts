@@ -8,7 +8,7 @@ interface Options {
 
 const defaultOptions: Options = {
     sourceType: 'close',
-    period: 12,
+    period: 10,
 };
 
 export function calculate(candles: CandleRage[], options?: Options) {
