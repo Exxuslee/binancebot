@@ -101,7 +101,7 @@ export function logStopLose(pair: string, price: number, type: string, stopLose:
 
 export function logStop(pair: string, price: number, type: string, profit: number) {
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-    let percent = type == OrderSide.BUY ? profit * 0.99 / price - 1 : price / profit * 1.01 - 1
+    let percent = type == OrderSide.BUY ? profit * 0.00075 / price - 1 : price / profit * 1.00075 - 1
     let percent2 = percent.toFixed(3)
     const message = ['Stop', type, pair, 'at current', +price.toFixed(2), ', TP:', profit, '=', percent2, '%'].join(' ')
     logger.info(`${logDate} : ${message}`);

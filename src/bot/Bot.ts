@@ -47,11 +47,11 @@ export class Bot {
             emitter.on(pair, candlesArray => {
                 let temp = ''
                 candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
-                //if (candlesArray.dataCandles[0].isBuyerMaker && candlesArray.dataCandles[0].isBuyerMaker
-                //|| !candlesArray.dataCandles[0].isBuyerMaker && !candlesArray.dataCandles[0].isBuyerMaker)
-                //    console.log(pair, temp, candlesArray.currentPrice, '|lh',
-                //    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
-                //)
+                // if (candlesArray.dataCandles[0].isBuyerMaker && candlesArray.dataCandles[0].isBuyerMaker
+                // || !candlesArray.dataCandles[0].isBuyerMaker && !candlesArray.dataCandles[0].isBuyerMaker)
+                    console.log(pair, temp, candlesArray.currentPrice, '|lh',
+                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
+                )
 
                 this.trade(candlesArray.dataCandles,
                     strategyConfig,
@@ -130,7 +130,7 @@ export class Bot {
         ) {
             //console.log(`${pair}: Stop order SELL`)
             order.setTrading(true)
-            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
+            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
             order.setBear(false)
             order.setRelax(true)
             order.setTrading(false)
@@ -187,7 +187,8 @@ export class Bot {
     async report(candles, strategyConfig, order) {
         // Day change ?
         let candleDay = dayjs(new Date(candles[0].closeTime)).format('DD/MM/YYYY');
-        if (candleDay !== this.currentDay) {
+        let hour = Number(dayjs(Date.now()).format('HH'));
+        if (candleDay !== this.currentDay && hour > 7) {
             await this.balance.updateCurrent()
             sendDailyResult(this.telegram, this.balance, strategyConfig.asset, order.getReport());
             this.currentDay = candleDay;
