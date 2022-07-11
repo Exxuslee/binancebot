@@ -95,8 +95,8 @@ export function logStart(pair: string, price: number, size: number, type: string
 export function logStopLose(pair: string, price: number, type: string, priceStart: number) {
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
     let percent = type == OrderSide.BUY
-        ? (priceStart - price) / price * 100
-        : (price - priceStart) / priceStart * 100
+        ? -(priceStart - price) / price * 100
+        : -(price - priceStart) / priceStart * 100
     let percent2 = percent.toFixed(3)
     const message = [type, pair, price, '\t=', percent2, '%'].join(' ')
     logger.info(`${logDate} : ${message}`);

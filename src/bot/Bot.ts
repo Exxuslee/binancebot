@@ -179,7 +179,7 @@ export class Bot {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, currentPrice, order.getPriceStart())
+            logStop(pair, currentPrice, orderSide, order.getPriceStart())
         }).catch(error);
     }
 
