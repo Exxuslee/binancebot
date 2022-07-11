@@ -49,7 +49,7 @@ export class Bot {
                 candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
                 // if (candlesArray.dataCandles[0].isBuyerMaker && candlesArray.dataCandles[0].isBuyerMaker
                 // || !candlesArray.dataCandles[0].isBuyerMaker && !candlesArray.dataCandles[0].isBuyerMaker)
-                    console.log(pair, temp, candlesArray.currentPrice, '|lh',
+                console.log(pair, temp, candlesArray.currentPrice, '|lh',
                     candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
                 )
 
@@ -68,7 +68,7 @@ export class Bot {
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL() > currentPrice) {
             logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceSL())
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setBull(false)
             order.setReport(false)
         }
@@ -76,7 +76,7 @@ export class Bot {
         // Clear SELL by stop-loss
         if (order.getBear() && order.getPriceSL() < currentPrice) {
             logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceSL())
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setBear(false)
             order.setReport(false)
         }
@@ -88,7 +88,7 @@ export class Bot {
             if (strategyConfig.buyStrategy(candles) && !order.getRelax()) {
                 if (order.getRelax()) {
                     console.log(`${pair}: Not start order BUY - relax `)
-                    order.setRelax(false)
+                    //order.setRelax(false)
                 } else {
                     //console.log(`${pair}: Start order BUY`)
                     order.setTrading(true)
@@ -114,33 +114,33 @@ export class Bot {
         }
 
         // Stop order BUY
-        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
-            && !order.getTrading()) {
+        // if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
+        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && !order.getTrading()) {
             //console.log(`${pair}: Stop order BUY`)
             order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBull(false)
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setTrading(false)
             order.setReport(true)
         }
 
         // Stop order SELL
-        if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
+        // if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
+        if (order.getBear() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker && !order.getTrading()
         ) {
             //console.log(`${pair}: Stop order SELL`)
             order.setTrading(true)
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
             order.setBear(false)
-            order.setRelax(true)
+            //order.setRelax(true)
             order.setTrading(false)
             order.setReport(true)
         }
 
         // Report
-        if (order.getRelax()) {
-            await this.report(candles, strategyConfig, order)
-        }
+        await this.report(candles, strategyConfig, order)
+
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {
@@ -187,12 +187,14 @@ export class Bot {
     async report(candles, strategyConfig, order) {
         // Day change ?
         let candleDay = dayjs(new Date(candles[0].closeTime)).format('DD/MM/YYYY');
-        let hour = Number(dayjs(Date.now()).format('HH'));
-        if (candleDay !== this.currentDay && hour > 7) {
-            await this.balance.updateCurrent()
-            sendDailyResult(this.telegram, this.balance, strategyConfig.asset, order.getReport());
-            this.currentDay = candleDay;
-            this.balance.updateDay()
+        if (candleDay !== this.currentDay ) {
+            let hour = Number(dayjs(Date.now()).format('HH'));
+            if (hour >= 7){
+                await this.balance.updateCurrent()
+                sendDailyResult(this.telegram, this.balance, strategyConfig.asset, order.getReport());
+                this.currentDay = candleDay;
+                this.balance.updateDay()
+            }
         }
     }
 }

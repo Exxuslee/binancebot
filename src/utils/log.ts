@@ -87,14 +87,14 @@ export function logStopExecutionOrder(
 
 export function logStart(pair: string, price: number, size: number, type: string, profit, stopLose: number) {
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-    const message = ['Start', type, pair, 'at', price, 'size', size, `, TP:${profit}, SL:${stopLose}`].join(' ')
+    const message = [type, pair, price, '$, size', size, `, TP:${profit}, SL:${stopLose}`].join(' ')
     logger.info(`${logDate} : ${message}`);
     console.log(`${chalk.yellow(logDate)} : ${message}`);
 }
 
 export function logStopLose(pair: string, price: number, type: string, stopLose: number) {
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-    const message = ['StopLose', type, pair, 'at current', price, ', SL:', stopLose].join(' ')
+    const message = [type, pair, 'at current', price, ', SL:', stopLose].join(' ')
     logger.info(`${logDate} : ${message}`);
     console.log(`${chalk.red(logDate)} : ${message}`);
 }
@@ -103,7 +103,7 @@ export function logStop(pair: string, price: number, type: string, profit: numbe
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
     let percent = type == OrderSide.BUY ? profit * 0.00075 / price - 1 : price / profit * 1.00075 - 1
     let percent2 = percent.toFixed(3)
-    const message = ['Stop', type, pair, 'at current', +price.toFixed(2), ', TP:', profit, '=', percent2, '%'].join(' ')
+    const message = [type, pair, 'at', +price.toFixed(2), ', TP:', profit, '=', percent2, '%'].join(' ')
     logger.info(`${logDate} : ${message}`);
     console.log(`${chalk.green(logDate)} : ${message}`);
 }

@@ -7,7 +7,7 @@ interface Options {
 }
 
 const defaultOptions: Options = {
-    maPeriod: 11,
+    maPeriod: 12,
     maType: 'WMA',
 };
 
