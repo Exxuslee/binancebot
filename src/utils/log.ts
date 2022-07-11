@@ -92,9 +92,13 @@ export function logStart(pair: string, price: number, size: number, type: string
     console.log(`${chalk.yellow(logDate)} : ${message}`);
 }
 
-export function logStopLose(pair: string, price: number, type: string, stopLose: number) {
+export function logStopLose(pair: string, price: number, type: string, priceStart: number) {
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-    const message = [type, pair, 'current', price, ', SL:', stopLose].join(' ')
+    let percent = type == OrderSide.BUY
+        ? (priceStart - price) / price * 100
+        : (price - priceStart) / priceStart * 100
+    let percent2 = percent.toFixed(3)
+    const message = [type, pair, price, '\t=', percent2, '%'].join(' ')
     logger.info(`${logDate} : ${message}`);
     console.log(`${chalk.red(logDate)} : ${message}`);
 }
@@ -105,7 +109,7 @@ export function logStop(pair: string, price: number, type: string, priceStart: n
         ? (priceStart - price) / price * 100
         : (price - priceStart) / priceStart * 100
     let percent2 = percent.toFixed(3)
-    const message = [type, pair, +price.toFixed(2), ', start:', priceStart, '=', percent2, '%'].join(' ')
+    const message = [type, pair, +price.toFixed(2), '\t=', percent2, '%'].join(' ')
     logger.info(`${logDate} : ${message}`);
     console.log(`${chalk.green(logDate)} : ${message}`);
 }

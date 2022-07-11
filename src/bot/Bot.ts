@@ -29,7 +29,7 @@ export class Bot {
     }
 
     public async run() {
-        log('=========== 💵 BINANCE BOT TRADING 💵 ===========');
+        log('============ 💵 BINANCE BOT TRADING 💵 ============');
         this.telegram = new Telegram()
         this.balance = new Balance()
         this.exchangeInfo = await binanceClient.exchangeInfo();
@@ -37,9 +37,9 @@ export class Bot {
         await this.balance.init()
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;
-            let b1 = this.balance.bCurrent(strategyConfig.asset)
-            let b2 = this.balance.bCurrent(strategyConfig.base)
-            log(`Trades ${pair}: ${b1}\t${b2}`);
+            let b1 = this.balance.bCurrent(strategyConfig.asset).toFixed(4)
+            let b2 = this.balance.bCurrent(strategyConfig.base).toFixed(0)
+            log(`Trades ${pair}:\t${b1}\t${b2}$`);
             let view = new View(emitter, strategyConfig.leverage)
             let order = new Order()
             order.closeOpenOrders(pair)
@@ -49,9 +49,9 @@ export class Bot {
                 candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
                 // if (candlesArray.dataCandles[0].isBuyerMaker && candlesArray.dataCandles[0].isBuyerMaker
                 // || !candlesArray.dataCandles[0].isBuyerMaker && !candlesArray.dataCandles[0].isBuyerMaker)
-                console.log(pair, temp, candlesArray.currentPrice, '|lh',
-                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
-                )
+                // console.log(pair, temp, candlesArray.currentPrice, '|lh',
+                //     candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
+                // )
 
                 this.trade(candlesArray.dataCandles,
                     strategyConfig,
@@ -67,7 +67,7 @@ export class Bot {
 
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL() > currentPrice) {
-            logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceSL())
+            logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
             //order.setRelax(true)
             order.setBull(false)
             order.setReport(false)
@@ -75,7 +75,7 @@ export class Bot {
 
         // Clear SELL by stop-loss
         if (order.getBear() && order.getPriceSL() < currentPrice) {
-            logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceSL())
+            logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
             //order.setRelax(true)
             order.setBear(false)
             order.setReport(false)

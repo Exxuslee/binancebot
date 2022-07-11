@@ -69,7 +69,7 @@ export class View {
         this.currentRage.closeTime = new Date(aggTrade.timestamp)
         this.candleRage.unshift(this.currentRage)
         this.init(aggTrade)
-        if (this.candleRage.length > 12) {
+        if (this.candleRage.length > 14) {
             this.emitter.emit(aggTrade.symbol, {
                 dataCandles: this.candleRage,
                 currentPrice: Number(aggTrade.price)

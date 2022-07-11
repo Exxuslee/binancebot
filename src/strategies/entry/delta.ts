@@ -7,7 +7,7 @@ interface Options {
 }
 
 const defaultOptions: Options = {
-    maPeriod: 12,
+    maPeriod: 13,
     maType: 'WMA',
 };
 
@@ -32,7 +32,7 @@ export const isBuySignal = (
     let bull2: boolean = values[values.length - 1] > candles[0].high
     let bull3: boolean = values[values.length - 1] > candles[1].high
 
-    if (bull1) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
+    //if (bull1) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
     return bull1 && bull2 && bull3;
 
 
@@ -56,6 +56,6 @@ export const isSellSignal = (
     let bear2: boolean = values[values.length - 1] < candles[0].low
     let bear3: boolean = values[values.length - 1] < candles[1].low
 
-    if (bear1) console.log('isSellSignal', values[values.length - 1], candles[0].low, candles[1].low)
+    //if (bear1) console.log('isSellSignal', values[values.length - 1], candles[0].low, candles[1].low)
     return bear1 && bear2 && bear3
 };
