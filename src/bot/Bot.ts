@@ -81,6 +81,31 @@ export class Bot {
             order.setReport(false)
         }
 
+        // Stop order BUY
+        // if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
+        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && !order.getTrading()) {
+            //console.log(`${pair}: Stop order BUY`)
+            order.setTrading(true)
+            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
+            order.setBull(false)
+            //order.setRelax(true)
+            order.setTrading(false)
+            order.setReport(true)
+        }
+
+        // Stop order SELL
+        // if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
+        if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && !order.getTrading()
+        ) {
+            //console.log(`${pair}: Stop order SELL`)
+            order.setTrading(true)
+            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
+            order.setBear(false)
+            //order.setRelax(true)
+            order.setTrading(false)
+            order.setReport(true)
+        }
+
         // Ready to start
         if (!order.getBull() && !order.getBear() && !order.getTrading()) {
 
@@ -111,31 +136,6 @@ export class Bot {
                     order.setTrading(false)
                 }
             }
-        }
-
-        // Stop order BUY
-        // if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
-        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && !order.getTrading()) {
-            //console.log(`${pair}: Stop order BUY`)
-            order.setTrading(true)
-            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
-            order.setBull(false)
-            //order.setRelax(true)
-            order.setTrading(false)
-            order.setReport(true)
-        }
-
-        // Stop order SELL
-        // if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
-        if (order.getBear() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker && !order.getTrading()
-        ) {
-            //console.log(`${pair}: Stop order SELL`)
-            order.setTrading(true)
-            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
-            order.setBear(false)
-            //order.setRelax(true)
-            order.setTrading(false)
-            order.setReport(true)
         }
 
         // Report
