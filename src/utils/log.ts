@@ -98,7 +98,7 @@ export function logStopLose(pair: string, price: number, type: string, priceStar
         ? (price - priceStart) / price * 100
         : (priceStart - price) / priceStart * 100
     let percent2 = percent.toFixed(3)
-    const message = [type, pair, price, '\t=', percent2, '%'].join(' ')
+    const message = [type, pair, price, '=%\t', percent2].join(' ')
     logger.info(`${logDate} : ${message}`);
     console.log(`${chalk.red(logDate)} : ${message}`);
 }
@@ -109,7 +109,7 @@ export function logStop(pair: string, price: number, type: string, priceStart: n
         ? (priceStart - price) / price * 100
         : (price - priceStart) / priceStart * 100
     let percent2 = percent.toFixed(3)
-    const message = [type, pair, +price.toFixed(2), '\t=', percent2, '%'].join(' ')
+    const message = [type, pair, +price.toFixed(2), '=%\t', percent2].join(' ')
     logger.info(`${logDate} : ${message}`);
     percent > 0
         ? console.log(`${chalk.green(logDate)} : ${message}`)
