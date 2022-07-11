@@ -96,3 +96,8 @@ type TradingSession = {
   start: { hour: number; minute: number };
   end: { hour: number; minute: number };
 };
+
+interface CounterResponse {
+  sum: number;
+  count: number;
+}

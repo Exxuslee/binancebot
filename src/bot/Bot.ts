@@ -9,6 +9,7 @@ import Emittery from "emittery";
 import {Order} from "./Order";
 import {getPricePrecision, validPrice, validQuantity} from "../utils/currencyInfo";
 import {sendDailyResult} from "../telegram/message";
+import {Counter} from "./Counter";
 
 export class Bot {
     private strategyConfigs: StrategyConfig[];
@@ -19,6 +20,7 @@ export class Bot {
     private currentDay: string;
     private currentMonth: string;
     private bit: boolean
+    private counters: { [symbol: string]: Counter };
 
     constructor(tradeConfigs: StrategyConfig[]) {
         this.strategyConfigs = tradeConfigs;
@@ -26,6 +28,7 @@ export class Bot {
         this.currentDay = dayjs(Date.now()).format('DD/MM/YYYY');
         this.currentMonth = dayjs(Date.now()).format('MM/YYYY');
         this.bit = true
+        this.counters = {};
     }
 
     public async run() {
@@ -42,6 +45,7 @@ export class Bot {
             log(`Trades ${pair}:\t${b1}\t${b2}$`);
             let view = new View(emitter, strategyConfig.leverage)
             let order = new Order()
+            this.counters[pair] = new Counter();
             order.closeOpenOrders(pair)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, candlesArray => {
@@ -68,6 +72,7 @@ export class Bot {
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL() > currentPrice) {
             logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
+            this.counters[pair].add(currentPrice, order.getPriceStart())
             //order.setRelax(true)
             order.setBull(false)
             order.setReport(false)
@@ -76,6 +81,7 @@ export class Bot {
         // Clear SELL by stop-loss
         if (order.getBear() && order.getPriceSL() < currentPrice) {
             logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
+            this.counters[pair].add(order.getPriceStart(), currentPrice)
             //order.setRelax(true)
             order.setBear(false)
             order.setReport(false)
@@ -89,8 +95,9 @@ export class Bot {
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBull(false)
             //order.setRelax(true)
-            order.setTrading(false)
+            this.counters[pair].add(currentPrice, order.getPriceStart())
             order.setReport(true)
+            order.setTrading(false)
         }
 
         // Stop order SELL
@@ -102,8 +109,9 @@ export class Bot {
             await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
             order.setBear(false)
             //order.setRelax(true)
-            order.setTrading(false)
+            this.counters[pair].add(order.getPriceStart(), currentPrice)
             order.setReport(true)
+            order.setTrading(false)
         }
 
         // Ready to start
@@ -139,7 +147,7 @@ export class Bot {
         }
 
         // Report
-        await this.report(candles, strategyConfig, order)
+        await this.report(candles, strategyConfig, order, pair)
 
     }
 
@@ -183,17 +191,20 @@ export class Bot {
         }).catch(error);
     }
 
-    async report(candles, strategyConfig, order) {
+    async report(candles, strategyConfig, order, pair) {
         // Day change ?
         let candleDay = dayjs(new Date(candles[0].closeTime)).format('DD/MM/YYYY');
-        if (candleDay !== this.currentDay ) {
+        if (candleDay !== this.currentDay) {
             let hour = Number(dayjs(Date.now()).format('HH'));
-            if (hour >= 7){
+            if (hour >= 7) {
                 await this.balance.updateCurrent()
-                sendDailyResult(this.telegram, this.balance, strategyConfig.asset, order.getReport());
+                sendDailyResult(
+                    this.telegram, this.balance, strategyConfig.asset, order.getReport(), this.counters[pair].getCounter()
+                );
                 this.currentDay = candleDay;
                 this.balance.updateDay()
             }
+            this.counters[pair].reset();
         }
     }
 }

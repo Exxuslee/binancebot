@@ -3,6 +3,7 @@ import {AssetBalance} from "binance-api-node";
 import chalk from "chalk";
 import dayjs from "dayjs";
 import {log} from "../utils/log";
+import {Counter} from "./Counter";
 
 
 export class Balance {

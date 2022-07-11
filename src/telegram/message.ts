@@ -6,7 +6,8 @@ import {Balance} from "../bot/Balance";
 /**
  * Send the results of the day to the telegram channel
  */
-export const sendDailyResult = (telegram: Telegram, balance: Balance, asset:string, report: string) => {
+export const sendDailyResult
+    = (telegram: Telegram, balance: Balance, asset: string, report: string, count: CounterResponse) => {
 
     let performance = decimalFloor(
         ((balance.bCurrent(asset) - balance.bDay(asset)) / balance.bDay(asset)) * 100,
@@ -16,6 +17,6 @@ export const sendDailyResult = (telegram: Telegram, balance: Balance, asset:stri
     let emoji = performance >= 0 ? '🟢' : '🔴';
     let message = `${balance.bCurrent(asset)} ${report}\n: ${
         performance > 0 ? `<b>+${performance}%</b>` : `${performance}%`
-    } ${emoji}`;
+    } ${emoji}\tsum=${count.sum} count=${count.count}`;
     telegram.sendTelegramMessage(message).then(r => console.log(`promise telegram ${r}`))
 }
