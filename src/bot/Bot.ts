@@ -176,11 +176,10 @@ export class Bot {
     }
 
     async stopSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide, quantity) {
-        let reverseOrder = (orderSide === OrderSide.BUY) ? OrderSide.SELL : OrderSide.BUY
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, reverseOrder, order.getPriceStart())
+            logStop(pair, currentPrice, currentPrice, order.getPriceStart())
         }).catch(error);
     }
 
