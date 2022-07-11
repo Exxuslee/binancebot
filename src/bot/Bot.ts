@@ -169,9 +169,9 @@ export class Bot {
         stopLoss = validPrice(stopLoss)
 
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
-            order.setProfit(takeProfits[0].price)
+            order.setPriceStart(currentPrice)
             order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
-            logStart(pair, currentPrice, quantity, orderSide, takeProfits[0].price, stopLoss)
+            logStart(pair, currentPrice, quantity, orderSide, stopLoss)
         }).catch(error);
     }
 
@@ -180,7 +180,7 @@ export class Bot {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
             order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, reverseOrder, order.getProfit())
+            logStop(pair, currentPrice, reverseOrder, order.getPriceStart())
         }).catch(error);
     }
 

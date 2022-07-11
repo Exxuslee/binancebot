@@ -10,7 +10,7 @@ export class Order {
     private _relax: boolean = false
     private _priceSL;
     private _sizeSL
-    private _priceProfit
+    private _priceStart
     private _nowTrading: boolean = false
     private _report = ''
 
@@ -105,12 +105,12 @@ export class Order {
         this._sizeSL = quantity
     }
 
-    setProfit(prise: number) {
-        this._priceProfit = prise
+    setPriceStart(prise: number) {
+        this._priceStart = prise
     }
 
-    getProfit() {
-        return this._priceProfit
+    getPriceStart() {
+        return this._priceStart
     }
 
     setTrading(ok: boolean) {
