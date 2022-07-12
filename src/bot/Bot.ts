@@ -53,25 +53,16 @@ export class Bot {
             emitter.on(pair, message => {
                 let tempSlow = ''
                 message.dataCandles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
-                let tempFast = ''
-                message.dataFast.map(asd => tempFast += asd.isBuyerMaker ? '0' : '1')
 
                 //Log candles
-                console.log(pair, tempSlow, tempFast, message.currentPrice, '|lh',
-                    message.dataCandles[0].low, message.dataCandles[0].high)
+                console.log(pair, tempSlow, message.currentPrice)
 
-                this.trade(message.dataCandles,
-                    strategyConfig,
-                    pair,
-                    order,
-                    message.currentPrice,
-                    message.dataFast
-                )
+                this.trade(message.dataCandles, strategyConfig, pair, order, message.currentPrice,)
             })
         })
     }
 
-    async trade(candles, strategyConfig, pair, order, currentPrice, candlesFast) {
+    async trade(candles, strategyConfig, pair, order, currentPrice) {
 
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL() > currentPrice) {
@@ -93,30 +84,32 @@ export class Bot {
 
         // Stop order BUY
         // if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
-        if (order.getBull() && candlesFast[0].isBuyerMaker && candlesFast[1].isBuyerMaker && !order.getTrading()) {
-            //console.log(`${pair}: Stop order BUY`)
-            order.setTrading(true)
-            await this.stopSignal(pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
-            order.setBull(false)
-            //order.setRelax(true)
-            this.counters[pair].add(currentPrice, order.getPriceStart())
-            //order.setReport(true)
-            order.setTrading(false)
-        }
+        if (order.getBull() && !order.getTrading())
+            if (candles[0].isBuyerMaker && candles[1].isBuyerMaker) {
+                //console.log(`${pair}: Stop order BUY`)
+                order.setTrading(true)
+                await this.stopSignal(pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
+                order.setBull(false)
+                //order.setRelax(true)
+                this.counters[pair].add(currentPrice, order.getPriceStart())
+                //order.setReport(true)
+                order.setTrading(false)
+            }
+
 
         // Stop order SELL
         // if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
-        if (order.getBear() && !candlesFast[0].isBuyerMaker && !candlesFast[1].isBuyerMaker && !order.getTrading()
-        ) {
-            //console.log(`${pair}: Stop order SELL`)
-            order.setTrading(true)
-            await this.stopSignal(pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
-            order.setBear(false)
-            //order.setRelax(true)
-            this.counters[pair].add(order.getPriceStart(), currentPrice)
-            //order.setReport(true)
-            order.setTrading(false)
-        }
+        if (order.getBear() && !order.getTrading())
+            if (!candles[0].isBuyerMaker && !candles[1].isBuyerMaker) {
+                //console.log(`${pair}: Stop order SELL`)
+                order.setTrading(true)
+                await this.stopSignal(pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
+                order.setBear(false)
+                //order.setRelax(true)
+                this.counters[pair].add(order.getPriceStart(), currentPrice)
+                //order.setReport(true)
+                order.setTrading(false)
+            }
 
         // Ready to start
         if (!order.getBull() && !order.getBear() && !order.getTrading()) {
@@ -183,9 +176,9 @@ export class Bot {
         let bit
         bit = await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 500).catch(error)
         if (bit) {
-                order.setPriceStart(currentPrice)
-                order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss, 0).catch(error);
-                logStart(pair, currentPrice, quantity, orderSide, stopLoss)
+            order.setPriceStart(currentPrice)
+            order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss, 0).catch(error);
+            logStart(pair, currentPrice, quantity, orderSide, stopLoss)
         }
         return bit
     }
