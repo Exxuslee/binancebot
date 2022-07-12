@@ -50,27 +50,28 @@ export class Bot {
             this.counters[pair] = new Counter();
             order.closeOpenOrders(pair)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
-            emitter.on(pair, candlesArray => {
+            emitter.on(pair, message => {
                 let tempSlow = ''
-                candlesArray.dataCandles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
+                message.dataCandles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
                 let tempFast = ''
-                candlesArray.dataFast.map(asd => tempFast += asd.isBuyerMaker ? '0' : '1')
+                message.dataFast.map(asd => tempFast += asd.isBuyerMaker ? '0' : '1')
 
                 //Log candles
-                console.log(pair, tempSlow, tempFast, candlesArray.currentPrice, '|lh',
-                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high)
+                console.log(pair, tempSlow, tempFast, message.currentPrice, '|lh',
+                    message.dataCandles[0].low, message.dataCandles[0].high)
 
-                this.trade(candlesArray.dataCandles,
+                this.trade(message.dataCandles,
                     strategyConfig,
                     pair,
                     order,
-                    candlesArray.currentPrice,
+                    message.currentPrice,
+                    message.dataFast
                 )
             })
         })
     }
 
-    async trade(candles, strategyConfig, pair, order, currentPrice) {
+    async trade(candles, strategyConfig, pair, order, currentPrice, candlesFast) {
 
         // Clear BUY by stop-loss
         if (order.getBull() && order.getPriceSL() > currentPrice) {
@@ -92,10 +93,10 @@ export class Bot {
 
         // Stop order BUY
         // if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
-        if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && !order.getTrading()) {
+        if (order.getBull() && candlesFast[0].isBuyerMaker && candlesFast[1].isBuyerMaker && !order.getTrading()) {
             //console.log(`${pair}: Stop order BUY`)
             order.setTrading(true)
-            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
+            await this.stopSignal(pair, order, currentPrice, OrderSide.SELL, order.getSizeSL())
             order.setBull(false)
             //order.setRelax(true)
             this.counters[pair].add(currentPrice, order.getPriceStart())
@@ -105,11 +106,11 @@ export class Bot {
 
         // Stop order SELL
         // if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
-        if (order.getBear() && !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && !order.getTrading()
+        if (order.getBear() && !candlesFast[0].isBuyerMaker && !candlesFast[1].isBuyerMaker && !order.getTrading()
         ) {
             //console.log(`${pair}: Stop order SELL`)
             order.setTrading(true)
-            await this.stopSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
+            await this.stopSignal(pair, order, currentPrice, OrderSide.BUY, order.getSizeSL())
             order.setBear(false)
             //order.setRelax(true)
             this.counters[pair].add(order.getPriceStart(), currentPrice)
@@ -180,7 +181,7 @@ export class Bot {
         stopLoss = validPrice(stopLoss)
 
         let bit
-        bit = await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 1500).catch(error)
+        bit = await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 500).catch(error)
         if (bit) {
                 order.setPriceStart(currentPrice)
                 order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss, 0).catch(error);
@@ -189,7 +190,7 @@ export class Bot {
         return bit
     }
 
-    async stopSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide, quantity) {
+    async stopSignal(pair, order, currentPrice, orderSide, quantity) {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 0).then(() => {
             order.closeOpenOrders(pair).catch(error);
