@@ -17,6 +17,7 @@ export class Bot {
     private balance: Balance
     private exchangeInfo: ExchangeInfo;
     private hasOpenPosition: { [pair: string]: boolean };
+    private currentHour: number;
     private currentDay: string;
     private currentMonth: string;
     private bit: boolean
@@ -25,6 +26,7 @@ export class Bot {
     constructor(tradeConfigs: StrategyConfig[]) {
         this.strategyConfigs = tradeConfigs;
         this.hasOpenPosition = {};
+        this.currentHour = Number(dayjs(Date.now()).format('HH'))
         this.currentDay = dayjs(Date.now()).format('DD/MM/YYYY');
         this.currentMonth = dayjs(Date.now()).format('MM/YYYY');
         this.bit = true
@@ -75,7 +77,7 @@ export class Bot {
             this.counters[pair].add(currentPrice, order.getPriceStart())
             //order.setRelax(true)
             order.setBull(false)
-            order.setReport(false)
+            //order.setReport(false)
         }
 
         // Clear SELL by stop-loss
@@ -84,7 +86,7 @@ export class Bot {
             this.counters[pair].add(order.getPriceStart(), currentPrice)
             //order.setRelax(true)
             order.setBear(false)
-            order.setReport(false)
+            //order.setReport(false)
         }
 
         // Stop order BUY
@@ -96,7 +98,7 @@ export class Bot {
             order.setBull(false)
             //order.setRelax(true)
             this.counters[pair].add(currentPrice, order.getPriceStart())
-            order.setReport(true)
+            //order.setReport(true)
             order.setTrading(false)
         }
 
@@ -110,7 +112,7 @@ export class Bot {
             order.setBear(false)
             //order.setRelax(true)
             this.counters[pair].add(order.getPriceStart(), currentPrice)
-            order.setReport(true)
+            //order.setReport(true)
             order.setTrading(false)
         }
 
@@ -196,15 +198,18 @@ export class Bot {
         let candleDay = dayjs(new Date(candles[0].closeTime)).format('DD/MM/YYYY');
         if (candleDay !== this.currentDay) {
             let hour = Number(dayjs(Date.now()).format('HH'));
-            if (hour >= 7) {
+            if (hour > 6) {
                 await this.balance.updateCurrent()
-                sendDailyResult(
-                    this.telegram, this.balance, strategyConfig.asset, order.getReport(), this.counters[pair].getCounter()
-                );
+                sendDailyResult(this.telegram, this.balance, strategyConfig.asset, this.counters[pair].getCounter());
                 this.currentDay = candleDay;
                 this.balance.updateDay()
+                this.counters[pair].reset();
             }
-            this.counters[pair].reset();
+        }
+        let hour = Number(dayjs(Date.now()).format('HH'));
+        if (hour > this.currentHour) {
+            sendDailyResult(this.telegram, this.balance, strategyConfig.asset, this.counters[pair].getCounter());
+            this.currentHour = hour
         }
     }
 }

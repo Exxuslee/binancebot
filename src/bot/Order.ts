@@ -121,13 +121,13 @@ export class Order {
         return this._nowTrading
     }
 
-    setReport(ok: boolean) {
-        this._report = this._report + ok ? "1" : "0"
-    }
-
-    getReport() {
-        let data = (' ' + this._report).slice(1);
-        this._report = ''
-        return data
-    }
+    // setReport(ok: boolean) {
+    //     this._report = this._report + ok ? "1" : "0"
+    // }
+    //
+    // getReport() {
+    //     let data = (' ' + this._report).slice(1);
+    //     this._report = ''
+    //     return data
+    // }
 }
