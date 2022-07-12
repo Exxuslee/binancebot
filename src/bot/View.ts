@@ -1,6 +1,7 @@
 import {AggregatedTrade} from 'binance-api-node';
 import Emittery from "emittery";
 
+const len = 12
 
 export class View {
     private emitter: Emittery;
@@ -74,11 +75,11 @@ export class View {
         this.currentRageSlow.closeTime = new Date(aggTrade.timestamp)
         this.candleRageSlow.unshift(this.currentRageSlow)
         this.initSlow(aggTrade)
-        if (this.candleRageSlow.length > 12) {
+        if (this.candleRageSlow.length > len) {
             this.emitter.emit(aggTrade.symbol, {
                 dataCandles: this.candleRageSlow,
                 currentPrice: Number(aggTrade.price)
-            })
+            }).then(() => true)
             this.candleRageSlow.pop()
         }
     }

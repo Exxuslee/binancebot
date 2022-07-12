@@ -3,14 +3,13 @@ import {log} from "../utils/log";
 import {Binance, OrderSide, OrderType} from "binance-api-node";
 
 export class Order {
-    private _longStopLoss;
-    private _shortStopLoss;
     private _iBull: boolean = false
     private _iBear: boolean = false
     private _relax: boolean = false
     private _priceSL;
     private _sizeSL
-    private _priceStart
+    private _priceStart = 0
+    private _priceStop = 0
     private _nowTrading: boolean = false
 
     constructor() {
@@ -19,8 +18,10 @@ export class Order {
     async closeOpenOrders(pair: string) {
         let orders = await binanceClient.openOrders({symbol: pair})
         if (orders.length) {
-            log(`Close all open orders for the pair ${pair}`);
-            await binanceClient.cancelOpenOrders({symbol: pair})
+            let response = await binanceClient.cancelOpenOrders({symbol: pair})
+            let temp = []
+            response.map(result => temp.push(result.orderId))
+            //log(`Close all open orders for the pair ${pair} ${temp}`);
             this.updateSL(null, null)
         }
     }
@@ -30,14 +31,14 @@ export class Order {
         console.log("orders:", orders)
     }
 
-    async newOrder(
+    async newOrderStart(
         binanceClient: Binance,
         pair: string,
         quantity: number,
         orderSide,
         type,
         price: number,
-        delay: number
+        delay: number,
     ) {
 
         function afterDelay(pair) {
@@ -54,34 +55,47 @@ export class Order {
 
         if (price > (delayPrice * 0.98) && price < (delayPrice * 1.02)) {
             //console.log(pair, orderSide, type, price, quantity)
-            if (type === OrderType.MARKET)
-                await binanceClient.orderTest({
-                    side: orderSide,
-                    type: type,
-                    symbol: pair,
-                    quantity: String(quantity)
-                }).then(response => console.log('real order', response.price))
-            else if (type === OrderType.LIMIT && orderSide === OrderSide.BUY)
-                await binanceClient.orderTest({
-                    side: orderSide,
-                    type: type,
-                    symbol: pair,
-                    quantity: String(quantity),
-                    price: String(price)
-                }).then(() => this.updateSL(price, quantity))
-            else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
-                await binanceClient.orderTest({
+            if (type === OrderType.MARKET) {
+                let resp = await binanceClient.order({
+                    side: orderSide, type: type, symbol: pair, quantity: String(quantity)
+                })
+                if (resp.fills[0].price.length > 0) {
+                    this._priceStart = Number(resp.fills[0].price)
+                    if (orderSide === OrderSide.BUY) this._iBull = true
+                    else this._iBear = true
+                    return true
+                } else return false
+            } else if (type === OrderType.STOP_LOSS_LIMIT)
+                await binanceClient.order({
                     side: orderSide,
                     type: type,
                     symbol: pair,
                     quantity: String(quantity),
-                    price: String(price)
-                }).then(() => this.updateSL(price, quantity))
+                    price: String(price),
+                    stopPrice: String(price)
+                }).then(() => {
+                    this.updateSL(price, quantity)
+                })
             else throw ('Unknown type & OrderSide')
-            return true
         } else {
             log(`${orderSide} ${pair} ${price} <> ${delayPrice}`)
             return false
+        }
+    }
+
+    async newOrderStop(
+        binanceClient: Binance,
+        pair: string,
+        quantity: number,
+        orderSide,
+    ) {
+        let resp = await binanceClient.order({
+            side: orderSide, type: OrderType.MARKET, symbol: pair, quantity: String(quantity)
+        })
+        if (resp.fills[0].price.length > 0) {
+            this._iBear = false
+            this._iBull = false
+            this._priceStop = Number(resp.fills[0].price)
         }
     }
 
@@ -95,12 +109,10 @@ export class Order {
 
     setBull(ok: boolean) {
         this._iBull = ok
-//        if (!ok) this.updateSL(null, null)
     }
 
     setBear(ok: boolean) {
         this._iBear = ok
-        //      if (!ok) this.updateSL(null, null)
     }
 
     getPriceSL() {
@@ -119,17 +131,18 @@ export class Order {
         return this._relax
     }
 
-    private updateSL(prise: number, quantity: number) {
+    updateSL(prise: number, quantity: number) {
         this._priceSL = prise
         this._sizeSL = quantity
     }
 
-    setPriceStart(prise: number) {
-        this._priceStart = prise
-    }
 
     getPriceStart() {
         return this._priceStart
+    }
+
+    getPriceStop() {
+        return this._priceStop
     }
 
     setTrading(ok: boolean) {
@@ -139,14 +152,4 @@ export class Order {
     getTrading() {
         return this._nowTrading
     }
-
-    // setReport(ok: boolean) {
-    //     this._report = this._report + ok ? "1" : "0"
-    // }
-    //
-    // getReport() {
-    //     let data = (' ' + this._report).slice(1);
-    //     this._report = ''
-    //     return data
-    // }
 }
