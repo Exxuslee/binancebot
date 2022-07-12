@@ -15,8 +15,8 @@ export const sendDailyResult
     );
 
     let emoji = performance >= 0 ? '🟢' : '🔴';
-    let message = `${balance.bCurrent(asset)}:\n${
+    let message = `${balance.bCurrent(asset)}: ${
         performance > 0 ? `<b>+${performance}%</b>` : `${performance}%`
-    } ${emoji}\tsum=${count.sum} count=${count.count}`;
-    telegram.sendTelegramMessage(message).then(r => console.log(`promise telegram ${r}`))
+    } ${emoji}\tsum=${count.sum.toFixed(2)} count=${count.count}`;
+    telegram.sendTelegramMessage(message).then(r => true)
 }

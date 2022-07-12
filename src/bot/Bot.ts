@@ -51,13 +51,14 @@ export class Bot {
             order.closeOpenOrders(pair)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, candlesArray => {
-                let temp = ''
-                candlesArray.dataCandles.map(asd => temp += asd.isBuyerMaker ? '0' : '1')
-                // if (candlesArray.dataCandles[0].isBuyerMaker && candlesArray.dataCandles[0].isBuyerMaker
-                // || !candlesArray.dataCandles[0].isBuyerMaker && !candlesArray.dataCandles[0].isBuyerMaker)
-                // console.log(pair, temp, candlesArray.currentPrice, '|lh',
-                //     candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high
-                // )
+                let tempSlow = ''
+                candlesArray.dataCandles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
+                let tempFast = ''
+                candlesArray.dataFast.map(asd => tempFast += asd.isBuyerMaker ? '0' : '1')
+
+                //Log candles
+                console.log(pair, tempSlow, tempFast, candlesArray.currentPrice, '|lh',
+                    candlesArray.dataCandles[0].low, candlesArray.dataCandles[0].high)
 
                 this.trade(candlesArray.dataCandles,
                     strategyConfig,
@@ -127,8 +128,8 @@ export class Bot {
                 } else {
                     //console.log(`${pair}: Start order BUY`)
                     order.setTrading(true)
-                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
-                    order.setBull(true)
+                    let bit = await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.BUY)
+                    order.setBull(bit)
                     order.setTrading(false)
                 }
             }
@@ -141,8 +142,8 @@ export class Bot {
                 } else {
                     //console.log(`${pair}: Start order SELL`)
                     order.setTrading(true)
-                    await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
-                    order.setBear(true)
+                    let bit = await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
+                    order.setBear(bit)
                     order.setTrading(false)
                 }
             }
@@ -178,16 +179,19 @@ export class Bot {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         stopLoss = validPrice(stopLoss)
 
-        await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
-            order.setPriceStart(currentPrice)
-            order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss).catch(error);
-            logStart(pair, currentPrice, quantity, orderSide, stopLoss)
-        }).catch(error);
+        let bit
+        bit = await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 1500).catch(error)
+        if (bit) {
+                order.setPriceStart(currentPrice)
+                order.newOrder(binanceClient, pair, quantity, reverseOrder, OrderType.LIMIT, stopLoss, 0).catch(error);
+                logStart(pair, currentPrice, quantity, orderSide, stopLoss)
+        }
+        return bit
     }
 
     async stopSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide, quantity) {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
-        await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice).then(() => {
+        await order.newOrder(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 0).then(() => {
             order.closeOpenOrders(pair).catch(error);
             logStop(pair, currentPrice, orderSide, order.getPriceStart())
         }).catch(error);

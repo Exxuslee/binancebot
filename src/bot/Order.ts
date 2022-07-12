@@ -12,7 +12,6 @@ export class Order {
     private _sizeSL
     private _priceStart
     private _nowTrading: boolean = false
-    private _report = ''
 
     constructor() {
     }
@@ -38,32 +37,52 @@ export class Order {
         orderSide,
         type,
         price: number,
+        delay: number
     ) {
-        //console.log(pair, orderSide, type, price, quantity)
-        if (type === OrderType.MARKET)
-            await binanceClient.orderTest({
-                side: orderSide,
-                type: type,
-                symbol: pair,
-                quantity: String(quantity)
-            })
-        else if (type === OrderType.LIMIT && orderSide === OrderSide.BUY)
-            this._shortStopLoss = await binanceClient.orderTest({
-                side: orderSide,
-                type: type,
-                symbol: pair,
-                quantity: String(quantity),
-                price: String(price)
-            }).then(() => this.updateSL(price, quantity))
-        else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
-            this._longStopLoss = await binanceClient.orderTest({
-                side: orderSide,
-                type: type,
-                symbol: pair,
-                quantity: String(quantity),
-                price: String(price)
-            }).then(() => this.updateSL(price, quantity))
-        else throw ('Unknown type & OrderSide')
+
+        function afterDelay(pair) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    let p = binanceClient.prices({symbol: pair})
+                    resolve(p);
+                }, delay);
+            });
+        }
+
+        let delayObject = await afterDelay(pair)
+        let delayPrice = delayObject[pair]
+
+        if (price > (delayPrice * 0.98) && price < (delayPrice * 1.02)) {
+            //console.log(pair, orderSide, type, price, quantity)
+            if (type === OrderType.MARKET)
+                await binanceClient.orderTest({
+                    side: orderSide,
+                    type: type,
+                    symbol: pair,
+                    quantity: String(quantity)
+                }).then(response => console.log('real order', response.price))
+            else if (type === OrderType.LIMIT && orderSide === OrderSide.BUY)
+                await binanceClient.orderTest({
+                    side: orderSide,
+                    type: type,
+                    symbol: pair,
+                    quantity: String(quantity),
+                    price: String(price)
+                }).then(() => this.updateSL(price, quantity))
+            else if (type === OrderType.LIMIT && orderSide === OrderSide.SELL)
+                await binanceClient.orderTest({
+                    side: orderSide,
+                    type: type,
+                    symbol: pair,
+                    quantity: String(quantity),
+                    price: String(price)
+                }).then(() => this.updateSL(price, quantity))
+            else throw ('Unknown type & OrderSide')
+            return true
+        } else {
+            log(`${orderSide} ${pair} ${price} <> ${delayPrice}`)
+            return false
+        }
     }
 
     getBull() {
