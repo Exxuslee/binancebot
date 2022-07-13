@@ -26,7 +26,6 @@ export const config: AbstractStrategyConfig = (hyperParameters) =>
             deltaExitStrategy(
                 price,
                 candles,
-                pricePrecision,
                 side,
                 exchangeInfo
             ),

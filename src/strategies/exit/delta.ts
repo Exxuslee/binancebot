@@ -14,7 +14,6 @@ const defaultOptions: Options = {
 const strategy = (
     price: number,
     candles: CandleRage[],
-    pricePrecision: number,
     side: OrderSide,
     exchangeInfo: ExchangeInfo,
     options = defaultOptions
@@ -25,7 +24,7 @@ const strategy = (
 
     let takeProfits = [{
         price: validPrice(rawProfits),
-        quantityPercentage: 1,
+        quantityPercentage: 0.0011,
     }]
 
     let rawStopLoss = side === OrderSide.BUY

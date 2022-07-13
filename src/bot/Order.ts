@@ -17,7 +17,7 @@ export class Order {
     }
 
     async closeOpenOrders(pair: string) {
-        let orders = await binanceClient.openOrders({symbol: pair})
+        let orders = await this.viewOpenOrders(pair)
         if (orders.length) {
             let response = await binanceClient.cancelOpenOrders({symbol: pair})
             let temp = []
@@ -30,8 +30,7 @@ export class Order {
     }
 
     async viewOpenOrders(pair: string) {
-        let orders = await binanceClient.openOrders({symbol: pair})
-        console.log("orders:", orders)
+        return await binanceClient.openOrders({symbol: pair})
     }
 
     async marketStart(binanceClient: Binance, pair: string, quantity: number, orderSide, price: number, delay: number,) {
