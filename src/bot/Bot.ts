@@ -10,6 +10,7 @@ import {Order} from "./Order";
 import {getPricePrecision, validPrice, validQuantity} from "../utils/currencyInfo";
 import {sendDailyResult} from "../telegram/message";
 import {Counter} from "./Counter";
+import {initLogger} from "../init/initLogger";
 
 export class Bot {
     private strategyConfigs: StrategyConfig[];
@@ -51,21 +52,22 @@ export class Bot {
             order.closeOpenOrders(pair)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, message => {
-                //let tempSlow = ''
-                //message.dataCandles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
-
-                //Log candles
-                //console.log(pair, tempSlow, message.currentPrice)
-
                 this.trade(message.dataCandles, strategyConfig, pair, order, message.currentPrice,)
             })
         })
     }
 
     async trade(candles, strategyConfig, pair, order, currentPrice) {
+        //Log
+        //if (order.getBull() || order.getBear()) {}
+        let tempSlow = ''
+        candles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
+        let volume = candles[0].volume
+        log(`${pair} ${tempSlow}\t${currentPrice}  \t${volume.toFixed(2)}`)
+
 
         // Clear BUY by stop-loss
-        if (order.getBull() && order.getPriceSL() > currentPrice  && !order.getTrading()) {
+        if (order.getBull() && order.getPriceSL() > currentPrice && !order.getTrading()) {
             logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
             this.counters[pair].add(currentPrice, order.getPriceStart())
             //order.setRelax(true)
@@ -73,7 +75,7 @@ export class Bot {
         }
 
         // Clear SELL by stop-loss
-        if (order.getBear() && order.getPriceSL() < currentPrice  && !order.getTrading()) {
+        if (order.getBear() && order.getPriceSL() < currentPrice && !order.getTrading()) {
             logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
             this.counters[pair].add(order.getPriceStart(), currentPrice)
             //order.setRelax(true)
@@ -170,7 +172,7 @@ export class Bot {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         stopLoss = validPrice(stopLoss)
 
-        let bit = await order.newOrderStart(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 150).catch(error)
+        let bit = await order.newOrderStart(binanceClient, pair, quantity, orderSide, OrderType.MARKET, currentPrice, 50).catch(error)
         if (bit) {
             //order.setPriceStart(currentPrice)
             order.newOrderStart(binanceClient, pair, quantity, reverseOrder, OrderType.STOP_LOSS_LIMIT, stopLoss, 0).catch(error);
@@ -182,9 +184,12 @@ export class Bot {
     async stopSignal(pair, order, orderSide, quantity) {
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
         await order.newOrderStop(binanceClient, pair, quantity, orderSide).then(() => {
-            order.closeOpenOrders(pair).catch(error);
             logStop(pair, order.getPriceStop(), orderSide, order.getPriceStart())
-        }).catch(error);
+        }).catch(err => {
+            error(err)
+            error(quantity)
+        });
+        await order.closeOpenOrders(pair).catch(error);
     }
 
     async report(candles, strategyConfig, order, pair) {
@@ -202,6 +207,7 @@ export class Bot {
         }
         let hour = Number(dayjs(Date.now()).format('HH'));
         if (hour > this.currentHour) {
+            initLogger()
             sendDailyResult(this.telegram, this.balance, strategyConfig.asset, this.counters[pair].getCounter());
             this.currentHour = hour
         }

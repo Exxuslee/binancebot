@@ -23,6 +23,8 @@ export class Order {
             response.map(result => temp.push(result.orderId))
             //log(`Close all open orders for the pair ${pair} ${temp}`);
             this.updateSL(null, null)
+            this._iBear = false
+            this._iBull = false
         }
     }
 
@@ -53,7 +55,7 @@ export class Order {
         let delayObject = await afterDelay(pair)
         let delayPrice = delayObject[pair]
 
-        if (price > (delayPrice * 0.98) && price < (delayPrice * 1.02)) {
+        if (price > (delayPrice * 0.985) && price < (delayPrice * 1.015)) {
             //console.log(pair, orderSide, type, price, quantity)
             if (type === OrderType.MARKET) {
                 let resp = await binanceClient.order({

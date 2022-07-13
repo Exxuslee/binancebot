@@ -1,5 +1,5 @@
 import {EMA, SMA, WEMA, WMA} from '../../indicators';
-import {error} from "../../utils/log";
+import {error, log} from "../../utils/log";
 
 interface Options {
     maPeriod?: number;
@@ -28,12 +28,23 @@ export const isBuySignal = (
         period: options.maPeriod,
     });
 
+    let sumVol = 0
+    for (let i = 2; i < candles.length; i++) {
+        sumVol = sumVol + candles[i].volume
+    }
+    let sumEnd = sumVol / (candles.length - 2)
+    let sumStart = (candles[0].volume + candles[1].volume) / 2
+
+
     let bull1: boolean = !candles[0].isBuyerMaker && !candles[1].isBuyerMaker
     let bull2: boolean = values[values.length - 1] > candles[0].high
     let bull3: boolean = values[values.length - 1] > candles[1].high
+    let bull4: boolean = sumStart > sumEnd
+
+    if (bull1 && bull2 && bull3 && !bull4) log(`Relax - ${sumEnd.toFixed(2)} < ${sumStart.toFixed(2)}`)
 
     //if (bull1 && bull2 && bull3) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
-    return bull1 && bull2 && bull3;
+    return bull1 && bull2 && bull3 && bull4;
 
 
 };
@@ -52,10 +63,20 @@ export const isSellSignal = (
         period: options.maPeriod,
     });
 
+    let sumVol = 0
+    for (let i = 2; i < candles.length; i++) {
+        sumVol = sumVol + candles[i].volume
+    }
+    let sumEnd = sumVol / (candles.length - 2)
+    let sumStart = (candles[0].volume + candles[1].volume) / 2
+
     let bear1: boolean = candles[0].isBuyerMaker && candles[1].isBuyerMaker
     let bear2: boolean = values[values.length - 1] < candles[0].low
     let bear3: boolean = values[values.length - 1] < candles[1].low
+    let bear4: boolean = sumStart > sumEnd
+
+    if (bear1 && bear2 && bear3 && !bear4) log(`Relax - ${sumEnd.toFixed(2)} < ${sumStart.toFixed(2)}`)
 
     //if (bear1 && bear2 && bear3) console.log('isSellSignal', values[values.length - 1], candles[0].low, candles[1].low)
-    return bear1 && bear2 && bear3
+    return bear1 && bear2 && bear3 && bear4
 };
