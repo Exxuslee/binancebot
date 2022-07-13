@@ -1,13 +1,13 @@
 import {binanceClient} from "../init";
-import {log} from "../utils/log";
+import {error, log} from "../utils/log";
 import {Binance, OrderSide, OrderType} from "binance-api-node";
 
 export class Order {
     private _iBull: boolean = false
     private _iBear: boolean = false
-    private _relax: boolean = false
     private _priceSL;
-    private _sizeSL
+    private _priceTP;
+    private _quantity
     private _volume
     private _priceStart = 0
     private _priceStop = 0
@@ -34,16 +34,7 @@ export class Order {
         console.log("orders:", orders)
     }
 
-    async newOrderStart(
-        binanceClient: Binance,
-        pair: string,
-        quantity: number,
-        orderSide,
-        type,
-        price: number,
-        delay: number,
-    ) {
-
+    async marketStart(binanceClient: Binance, pair: string, quantity: number, orderSide, price: number, delay: number,) {
         function afterDelay(pair) {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
@@ -56,42 +47,57 @@ export class Order {
         let delayObject = await afterDelay(pair)
         let delayPrice = delayObject[pair]
 
-        if (price > (delayPrice * 0.995) && price < (delayPrice * 1.005)) {
+        if (price > (delayPrice * 0.99) && price < (delayPrice * 1.01)) {
             //console.log(pair, orderSide, type, price, quantity)
-            if (type === OrderType.MARKET) {
-                let resp = await binanceClient.order({
-                    side: orderSide, type: type, symbol: pair, quantity: String(quantity)
-                })
-                if (resp.fills[0].price.length > 0) {
-                    this._priceStart = Number(resp.fills[0].price)
-                    if (orderSide === OrderSide.BUY) this._iBull = true
-                    else this._iBear = true
-                    return true
-                } else return false
-            } else if (type === OrderType.STOP_LOSS_LIMIT)
-                await binanceClient.order({
-                    side: orderSide,
-                    type: type,
-                    symbol: pair,
-                    quantity: String(quantity),
-                    price: String(price),
-                    stopPrice: String(price)
-                }).then(() => {
-                    this.updateSL(price, quantity)
-                })
-            else throw ('Unknown type & OrderSide')
+            let resp = await binanceClient.order({
+                side: orderSide, type: OrderType.MARKET, symbol: pair, quantity: String(quantity)
+            })
+
+            if (resp.fills[0].price.length > 0) {
+                this._priceStart = Number(resp.fills[0].price)
+                this._quantity = quantity
+                if (orderSide === OrderSide.BUY) this._iBull = true
+                else this._iBear = true
+                return true
+            } else {
+                error(`${orderSide} ${pair} marketStart`)
+                return false
+            }
+
         } else {
             log(`${orderSide} ${pair} ${price} <> ${delayPrice}`)
             return false
         }
     }
 
-    async newOrderStop(
-        binanceClient: Binance,
-        pair: string,
-        quantity: number,
-        orderSide,
-    ) {
+    async stopLose(binanceClient: Binance, pair: string, quantity: number, orderSide, price: number) {
+        await binanceClient.order({
+            side: orderSide,
+            type: OrderType.STOP_LOSS_LIMIT,
+            symbol: pair,
+            quantity: String(quantity),
+            price: String(price),
+            stopPrice: String(price)
+        }).then(() => {
+            this.updateSL(price, quantity)
+        })
+
+    }
+
+    async takeProfit(binanceClient: Binance, pair: string, quantity: number, orderSide, price: number) {
+        await binanceClient.order({
+            side: orderSide,
+            type: OrderType.LIMIT,
+            symbol: pair,
+            quantity: String(quantity),
+            price: String(price),
+        }).then(() => {
+            this._priceTP = price
+        })
+
+    }
+
+    async stop(binanceClient: Binance, pair: string, quantity: number, orderSide,) {
         let resp = await binanceClient.order({
             side: orderSide, type: OrderType.MARKET, symbol: pair, quantity: String(quantity)
         })
@@ -110,33 +116,17 @@ export class Order {
         return this._iBear
     }
 
-    setBull(ok: boolean) {
-        this._iBull = ok
-    }
-
-    setBear(ok: boolean) {
-        this._iBear = ok
-    }
-
     getPriceSL() {
         return this._priceSL
     }
 
     getSizeSL() {
-        return this._sizeSL
-    }
-
-    setRelax(ok: boolean) {
-        this._relax = ok
-    }
-
-    getRelax() {
-        return this._relax
+        return this._quantity
     }
 
     updateSL(prise: number, quantity: number) {
         this._priceSL = prise
-        this._sizeSL = quantity
+        this._quantity = quantity
     }
 
 
@@ -154,6 +144,11 @@ export class Order {
 
     getTrading() {
         return this._nowTrading
+    }
+
+
+    getPriceTP() {
+        return this._priceTP
     }
 
     setVolume(vol: number) {

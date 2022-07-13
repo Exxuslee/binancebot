@@ -33,10 +33,10 @@ export const isBuySignal = (
         sumVol = sumVol + candles[i].volume
     }
     let sumEnd = sumVol / candles.length
-    let sumStart = (candles[0].volume + candles[1].volume) / 2
+    let sumStart = (candles[0].volume + candles[1].volume)
 
 
-    let bull1: boolean = !candles[0].isBuyerMaker && !candles[1].isBuyerMaker
+    let bull1: boolean = !candles[0].isBuyerMaker && !candles[1].isBuyerMaker && candles[2].isBuyerMaker
     let bull2: boolean = values[values.length - 1] > candles[0].high
     let bull3: boolean = values[values.length - 1] > candles[1].high
     let bull4: boolean = sumStart > sumEnd
@@ -70,7 +70,7 @@ export const isSellSignal = (
     let sumEnd = sumVol / candles.length
     let sumStart = (candles[0].volume + candles[1].volume) / 2
 
-    let bear1: boolean = candles[0].isBuyerMaker && candles[1].isBuyerMaker
+    let bear1: boolean = candles[0].isBuyerMaker && candles[1].isBuyerMaker && !candles[2].isBuyerMaker
     let bear2: boolean = values[values.length - 1] < candles[0].low
     let bear3: boolean = values[values.length - 1] < candles[1].low
     let bear4: boolean = sumStart > sumEnd

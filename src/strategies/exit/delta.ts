@@ -7,7 +7,7 @@ interface Options {
 }
 
 const defaultOptions: Options = {
-    doubleFee: 0.00075,
+    doubleFee: 0.0011,
     pair: "BTCUSDT"
 };
 

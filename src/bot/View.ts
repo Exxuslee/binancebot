@@ -73,7 +73,7 @@ export class View {
 
     private finishSlow(aggTrade) {
         this.currentRageSlow.closeTime = new Date(aggTrade.timestamp)
-        this.candleRageSlow.unshift(this.currentRageSlow)
+        if (this.currentRageSlow.volume.toFixed(2) != '0.00') this.candleRageSlow.unshift(this.currentRageSlow)
         this.initSlow(aggTrade)
         if (this.candleRageSlow.length > len) {
             this.emitter.emit(aggTrade.symbol, {
