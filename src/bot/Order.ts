@@ -8,6 +8,7 @@ export class Order {
     private _relax: boolean = false
     private _priceSL;
     private _sizeSL
+    private _volume
     private _priceStart = 0
     private _priceStop = 0
     private _nowTrading: boolean = false
@@ -55,7 +56,7 @@ export class Order {
         let delayObject = await afterDelay(pair)
         let delayPrice = delayObject[pair]
 
-        if (price > (delayPrice * 0.985) && price < (delayPrice * 1.015)) {
+        if (price > (delayPrice * 0.995) && price < (delayPrice * 1.005)) {
             //console.log(pair, orderSide, type, price, quantity)
             if (type === OrderType.MARKET) {
                 let resp = await binanceClient.order({
@@ -153,5 +154,13 @@ export class Order {
 
     getTrading() {
         return this._nowTrading
+    }
+
+    setVolume(vol: number) {
+        this._volume = vol
+    }
+
+    getVolume() {
+        return this._volume
     }
 }
