@@ -58,10 +58,10 @@ export class Bot {
 
     async trade(candles, strategyConfig, pair, order, currentPrice) {
         /** Log */
-        let tempSlow = ''
-        candles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
-        let volume = candles[0].volume
-        log(`${pair} ${tempSlow}\t${currentPrice}   \t${volume.toFixed(2)}`)
+        // let tempSlow = ''
+        // candles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
+        // let volume = candles[0].volume
+        // log(`${pair} ${tempSlow}\t${currentPrice}   \t${volume.toFixed(2)}`)
 
 
         /** Clear BUY by stop-loss */
@@ -86,7 +86,7 @@ export class Bot {
 
         /** Clear BUY by takeProfit */
         if (order.getBull() && order.getPriceTP() < currentPrice && !order.getTrading()) {
-            log(`Clear BUY by takeProfit`)
+            //log(`Clear BUY by takeProfit`)
             order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
             logStop(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
@@ -97,7 +97,7 @@ export class Bot {
 
         /** Clear SELL by takeProfit */
         if (order.getBear() && order.getPriceTP() > currentPrice && !order.getTrading()) {
-            log(`Clear SELL by takeProfit`)
+            //log(`Clear SELL by takeProfit`)
             order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
             logStop(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
@@ -110,7 +110,7 @@ export class Bot {
         if (order.getBull() && !order.getTrading()) {
             if (candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
             if (order.getVolume() < 0 || candles[0].isBuyerMaker && candles[1].isBuyerMaker) {
-                log(`Stop order BUY`)
+                //log(`Stop order BUY`)
                 order.setTrading(true)
                 await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity())
                 this.counters[pair].add(currentPrice, order.getPriceStart())
@@ -122,9 +122,9 @@ export class Bot {
         if (order.getBear() && !order.getTrading()) {
             if (!candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
             if (order.getVolume() < 0 || !candles[0].isBuyerMaker && !candles[1].isBuyerMaker) {
-                log(`Stop order SELL`)
+                //log(`Stop order SELL`)
                 order.setTrading(true)
-                await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity())
+                await this.stopSignal(pair, order, OrderSide.BUY, order.getQuantity())
                 this.counters[pair].add(currentPrice, order.getPriceStart())
                 order.setTrading(false)
             }
@@ -176,7 +176,7 @@ export class Bot {
         });
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
 
-        let bit = await order.marketStart(binanceClient, pair, quantity, orderSide, currentPrice, 10).catch(error)
+        let bit = await order.marketStart(binanceClient, pair, quantity, orderSide, currentPrice, 0).catch(error)
         if (bit) {
             //await order.stopLose(binanceClient, pair, quantity, reverseOrder, stopLoss)
             order.setPriceSL(stopLoss)
