@@ -78,11 +78,11 @@ export const isSellSignal = (
     let bear3: boolean = values[values.length - 1] < candles[1].low
     let bear4: boolean = sumStart > sumEnd
     let bear5: boolean = !lostPower(candles)
-    let bear6: boolean = fallVolume(candles)
+    let bear6: boolean = riseVolume(candles)
 
     if (bear1 && bear2 && bear3 && !bear4 && bear5 && bear6) log(`Relax - ${sumStart.toFixed(2)} < ${sumEnd.toFixed(2)}`)
-    if (bear1 && bear2 && bear3 && bear4 && !bear5 && bear6) log(`Lost power}`)
-    if (bear1 && bear2 && bear3 && bear4 && bear5 && !bear6) log(`Not fall volume`)
+    if (bear1 && bear2 && bear3 && bear4 && !bear5 && bear6) log(`Lost power`)
+    if (bear1 && bear2 && bear3 && bear4 && bear5 && !bear6) log(`Not rise volume`)
     //if (bear1 && bear2 && bear3) console.log('isSellSignal', values[values.length - 1], candles[0].low, candles[1].low)
     return bear1 && bear2 && bear3 && bear4 && bear5 && bear6
 };
@@ -97,7 +97,13 @@ function lostPower(candles: CandleRage[]) {
 }
 
 function fallVolume(candles: CandleRage[]) {
-    let vol0 = candles[0].volume * 3
+    let vol0 = candles[0].volume * 2.5
     let vol1 = candles[1].volume
+    return vol1 > vol0
+}
+
+function riseVolume(candles: CandleRage[]) {
+    let vol0 = candles[1].volume * 2.5
+    let vol1 = candles[0].volume
     return vol1 > vol0
 }

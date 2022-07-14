@@ -1,5 +1,5 @@
 import {ExchangeInfo, OrderSide} from 'binance-api-node';
-import {error, log, logStart, logStop, logStopLose} from '../utils/log';
+import {error, log, logStart, logStop} from '../utils/log';
 import {binanceClient} from '../init';
 import {Telegram} from '../telegram';
 import dayjs from 'dayjs';
@@ -86,6 +86,7 @@ export class Bot {
 
         /** Clear BUY by takeProfit */
         if (order.getBull() && order.getPriceTP() < currentPrice && !order.getTrading()) {
+            log(`Clear BUY by takeProfit`)
             order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
             logStop(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
@@ -96,6 +97,7 @@ export class Bot {
 
         /** Clear SELL by takeProfit */
         if (order.getBear() && order.getPriceTP() > currentPrice && !order.getTrading()) {
+            log(`Clear SELL by takeProfit`)
             order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
             logStop(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
@@ -105,25 +107,28 @@ export class Bot {
         }
 
         /** Stop order BUY */
-        // if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
-        if (order.getBull() && !order.getTrading())
-            if (candles[0].isBuyerMaker) {
+        if (order.getBull() && !order.getTrading()) {
+            if (candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
+            if (order.getVolume() < 0 || candles[0].isBuyerMaker && candles[1].isBuyerMaker) {
+                log(`Stop order BUY`)
                 order.setTrading(true)
                 await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity())
                 this.counters[pair].add(currentPrice, order.getPriceStart())
                 order.setTrading(false)
             }
-
+        }
 
         /**Stop order SELL */
-        // if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
-        if (order.getBear() && !order.getTrading())
-            if (!candles[0].isBuyerMaker) {
+        if (order.getBear() && !order.getTrading()) {
+            if (!candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
+            if (order.getVolume() < 0 || !candles[0].isBuyerMaker && !candles[1].isBuyerMaker) {
+                log(`Stop order SELL`)
                 order.setTrading(true)
-                await this.stopSignal(pair, order, OrderSide.BUY, order.getQuantity())
-                this.counters[pair].add(order.getPriceStart(), currentPrice)
+                await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity())
+                this.counters[pair].add(currentPrice, order.getPriceStart())
                 order.setTrading(false)
             }
+        }
 
         /** Ready to start */
         if (!order.getBull() && !order.getBear() && !order.getTrading()) {
@@ -171,10 +176,11 @@ export class Bot {
         });
         quantity = validQuantity(quantity, pair, this.exchangeInfo)
 
-        let bit = await order.marketStart(binanceClient, pair, quantity, orderSide, currentPrice, 50).catch(error)
+        let bit = await order.marketStart(binanceClient, pair, quantity, orderSide, currentPrice, 10).catch(error)
         if (bit) {
             //await order.stopLose(binanceClient, pair, quantity, reverseOrder, stopLoss)
             order.setPriceSL(stopLoss)
+            order.setVolume(candlesArray[0].volume + candlesArray[1].volume)
             await order.takeProfit(binanceClient, pair, quantity, reverseOrder, takeProfits[0].price)
             logStart(pair, order.getPriceStart(), quantity, orderSide, takeProfits[0].price, stopLoss)
         }
