@@ -118,6 +118,10 @@ export class Order {
         return this._priceSL
     }
 
+    setPriceSL(price) {
+        this._priceSL = price
+    }
+
     getPriceStart() {
         return this._priceStart
     }

@@ -5,7 +5,7 @@ import {DELTA} from "../strategies/entry";
 
 
 const assets = [
-    'BTC',
+    'BTC'
 ];
 
 export const hyperParameters = {};
