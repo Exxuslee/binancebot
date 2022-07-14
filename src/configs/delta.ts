@@ -22,10 +22,11 @@ export const config: AbstractStrategyConfig = (hyperParameters) =>
         leverage: 0.0004,
         loopInterval: CandleChartInterval.ONE_MINUTE,
         indicatorIntervals: [CandleChartInterval.FIVE_MINUTES],
-        exitStrategy: (price, candles, pricePrecision, side, exchangeInfo) =>
+        exitStrategy: (price, candles,   pricePrecision, side, exchangeInfo) =>
             deltaExitStrategy(
                 price,
                 candles,
+                pricePrecision,
                 side,
                 exchangeInfo
             ),

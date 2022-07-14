@@ -7,7 +7,7 @@ import {Balance} from "./Balance";
 import {View} from "./View";
 import Emittery from "emittery";
 import {Order} from "./Order";
-import {validQuantity} from "../utils/currencyInfo";
+import {getPricePrecision, validQuantity} from "../utils/currencyInfo";
 import {sendDailyResult} from "../telegram/message";
 import {Counter} from "./Counter";
 
@@ -57,8 +57,7 @@ export class Bot {
     }
 
     async trade(candles, strategyConfig, pair, order, currentPrice) {
-        //Log
-        //if (order.getBull() || order.getBear()) {}
+        /** Log */
         let tempSlow = ''
         candles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
         let volume = candles[0].volume
@@ -67,47 +66,51 @@ export class Bot {
 
         /** Clear BUY by stop-loss */
         if (order.getBull() && order.getPriceSL() > currentPrice && !order.getTrading()) {
+            order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
-            logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
+            logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
             this.counters[pair].add(currentPrice, order.getPriceStart())
             order.setBull(false)
+            order.setTrading(false)
         }
 
         /** Clear SELL by stop-loss */
         if (order.getBear() && order.getPriceSL() < currentPrice && !order.getTrading()) {
+            order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
-            logStopLose(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
+            logStopLose(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
             this.counters[pair].add(order.getPriceStart(), currentPrice)
             order.setBear(false)
+            order.setTrading(false)
         }
 
         /** Clear BUY by takeProfit */
         if (order.getBull() && order.getPriceTP() < currentPrice && !order.getTrading()) {
+            order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
+            logStop(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
             this.counters[pair].add(currentPrice, order.getPriceStart())
             order.setBull(false)
+            order.setTrading(false)
         }
 
         /** Clear SELL by takeProfit */
         if (order.getBear() && order.getPriceTP() > currentPrice && !order.getTrading()) {
+            order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
+            logStop(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
             this.counters[pair].add(order.getPriceStart(), currentPrice)
             order.setBear(false)
+            order.setTrading(false)
         }
 
         /** Stop order BUY */
         // if (order.getBull() && candles[0].isBuyerMaker && candles[1].isBuyerMaker && currentPrice > order.getProfit()
         if (order.getBull() && !order.getTrading())
             if (candles[0].isBuyerMaker && candles[1].isBuyerMaker) {
-                //console.log(`${pair}: Stop order BUY`)
                 order.setTrading(true)
-                await this.stopSignal(pair, order, OrderSide.SELL, order.getSizeSL())
-                //order.setBull(false)
-                //order.setRelax(true)
+                await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity())
                 this.counters[pair].add(currentPrice, order.getPriceStart())
-                //order.setReport(true)
                 order.setTrading(false)
             }
 
@@ -116,13 +119,9 @@ export class Bot {
         // if (order.getBear() && currentPrice < order.getProfit() && !order.getTrading() && !candles[0].isBuyerMaker && candles[1].isBuyerMaker
         if (order.getBear() && !order.getTrading())
             if (!candles[0].isBuyerMaker && !candles[1].isBuyerMaker) {
-                //console.log(`${pair}: Stop order SELL`)
                 order.setTrading(true)
-                await this.stopSignal(pair, order, OrderSide.BUY, order.getSizeSL())
-                //order.setBear(false)
-                //order.setRelax(true)
+                await this.stopSignal(pair, order, OrderSide.BUY, order.getQuantity())
                 this.counters[pair].add(order.getPriceStart(), currentPrice)
-                //order.setReport(true)
                 order.setTrading(false)
             }
 
@@ -155,6 +154,7 @@ export class Bot {
             ? strategyConfig.exitStrategy(
                 currentPrice,
                 candlesArray,
+                getPricePrecision(pair, this.exchangeInfo),
                 orderSide,
                 this.exchangeInfo
             ) : {takeProfits: [], stopLoss: null};
@@ -175,7 +175,7 @@ export class Bot {
         if (bit) {
             await order.stopLose(binanceClient, pair, quantity, reverseOrder, stopLoss)
             await order.takeProfit(binanceClient, pair, quantity, reverseOrder, takeProfits[0].price)
-            logStart(pair, order.getPriceStart(), quantity, orderSide, stopLoss)
+            logStart(pair, order.getPriceStart(), quantity, orderSide, takeProfits[0].price, stopLoss)
         }
         return bit
     }

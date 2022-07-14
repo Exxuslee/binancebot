@@ -85,9 +85,9 @@ export function logStopExecutionOrder(
     log(introPhrase);
 }
 
-export function logStart(pair: string, price: number, size: number, type: string, stopLose: number) {
+export function logStart(pair: string, price: number, size: number, type: string, takeProfits: number, stopLose: number) {
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-    const message = [type, pair, price, '$, size', size, `, SL:${stopLose}`].join(' ')
+    const message = [type, pair, `${price}$`, size, `, TP:${takeProfits}, SL:${stopLose}`].join(' ')
     logger.info(`${logDate} : ${message}`);
     console.log(`${chalk.yellow(logDate)} : ${message}`);
 }

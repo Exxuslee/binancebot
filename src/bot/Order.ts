@@ -23,7 +23,6 @@ export class Order {
             let temp = []
             response.map(result => temp.push(result.orderId))
             //log(`Close all open orders for the pair ${pair} ${temp}`);
-            this.updateSL(null, null)
             this._iBear = false
             this._iBull = false
         }
@@ -78,7 +77,7 @@ export class Order {
             price: String(price),
             stopPrice: String(price)
         }).then(() => {
-            this.updateSL(price, quantity)
+            this._priceSL = price
         })
 
     }
@@ -119,16 +118,6 @@ export class Order {
         return this._priceSL
     }
 
-    getSizeSL() {
-        return this._quantity
-    }
-
-    updateSL(prise: number, quantity: number) {
-        this._priceSL = prise
-        this._quantity = quantity
-    }
-
-
     getPriceStart() {
         return this._priceStart
     }
@@ -156,5 +145,17 @@ export class Order {
 
     getVolume() {
         return this._volume
+    }
+
+    getQuantity() {
+        return this._quantity
+    }
+
+    setBull(ok: boolean) {
+        this._iBull = ok
+    }
+
+    setBear(ok: boolean) {
+        this._iBear = ok
     }
 }
