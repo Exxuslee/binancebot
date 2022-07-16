@@ -20,3 +20,8 @@ export const sendDailyResult
     } ${emoji}\tsum=${count.sum.toFixed(2)} count=${count.count}`;
     telegram.sendTelegramMessage(message).then(r => true)
 }
+
+export const sendHourResult = (telegram: Telegram, count: CounterResponse) => {
+    let message = `sum=${count.sum.toFixed(2)}% count=${count.count}`;
+    telegram.sendTelegramMessage(message).then(r => true)
+}

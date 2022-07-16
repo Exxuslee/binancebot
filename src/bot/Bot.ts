@@ -8,7 +8,7 @@ import {View} from "./View";
 import Emittery from "emittery";
 import {Order} from "./Order";
 import {getPricePrecision, validQuantity} from "../utils/currencyInfo";
-import {sendDailyResult} from "../telegram/message";
+import {sendDailyResult, sendHourResult} from "../telegram/message";
 import {Counter} from "./Counter";
 
 export class Bot {
@@ -21,7 +21,7 @@ export class Bot {
     private currentDay: string;
     private currentMonth: string;
     private bit: boolean
-    private counters: { [symbol: string]: Counter };
+    private counters: Counter;
 
     constructor(tradeConfigs: StrategyConfig[]) {
         this.strategyConfigs = tradeConfigs;
@@ -30,16 +30,24 @@ export class Bot {
         this.currentDay = dayjs(Date.now()).format('DD/MM/YYYY');
         this.currentMonth = dayjs(Date.now()).format('MM/YYYY');
         this.bit = true
-        this.counters = {};
     }
 
     public async run() {
         log('============ 💵 BINANCE BOT TRADING 💵 ============');
         this.telegram = new Telegram()
         this.balance = new Balance()
+        this.counters = new Counter();
         this.exchangeInfo = await binanceClient.exchangeInfo();
         const emitter = new Emittery();
         await this.balance.init()
+
+        let min = Number(dayjs(Date.now()).format('mm'));
+        let sec = Number(dayjs(Date.now()).format('ss'));
+        let left = 3600 - min * 60 - sec
+        setTimeout(() =>
+            setInterval(() =>
+                sendHourResult(this.telegram, this.counters.getCounter()), 3600000), left*1000);
+
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;
             let b1 = this.balance.bCurrent(strategyConfig.asset).toFixed(4)
@@ -47,7 +55,6 @@ export class Bot {
             log(`Trades ${pair}:\t${b1}\t${b2}$`);
             let view = new View(emitter, strategyConfig.leverage)
             let order = new Order()
-            this.counters[pair] = new Counter();
             order.closeOpenOrders(pair)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => view.update(AggregatedTrade))
             emitter.on(pair, message => {
@@ -58,11 +65,12 @@ export class Bot {
 
     async trade(candles, strategyConfig, pair, order, currentPrice) {
         /** Log */
-        // let tempSlow = ''
-        // candles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
-        // let volume = candles[0].volume
-        // log(`${pair} ${tempSlow}\t${currentPrice}   \t${volume.toFixed(2)}`)
-
+        // if (pair == 'BTCUSDT') {
+        //     let tempSlow = ''
+        //     candles.map(asd => tempSlow += asd.isBuyerMaker ? '0' : '1')
+        //     let volume = candles[0].volume
+        //     log(`${pair} ${tempSlow}\t${currentPrice}   \t${volume.toFixed(2)}`)
+        // }
 
         /** Clear BUY by stop-loss */
         // if (order.getBull() && order.getPriceSL() > currentPrice && !order.getTrading()) {
@@ -89,8 +97,8 @@ export class Bot {
             //log(`Clear BUY by takeProfit`)
             order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, OrderSide.SELL, order.getPriceStart())
-            this.counters[pair].add(currentPrice, order.getPriceStart())
+            logStop(pair, order.getPriceTP(), OrderSide.SELL, order.getPriceStart())
+            this.counters.add(order.getPriceTP(), order.getPriceStart())
             order.setBull(false)
             order.setTrading(false)
         }
@@ -100,8 +108,8 @@ export class Bot {
             //log(`Clear SELL by takeProfit`)
             order.setTrading(true)
             await order.closeOpenOrders(pair).catch(error);
-            logStop(pair, currentPrice, OrderSide.BUY, order.getPriceStart())
-            this.counters[pair].add(order.getPriceStart(), currentPrice)
+            logStop(pair, order.getPriceTP(), OrderSide.BUY, order.getPriceStart())
+            this.counters.add(order.getPriceStart(), order.getPriceTP())
             order.setBear(false)
             order.setTrading(false)
         }
@@ -113,8 +121,7 @@ export class Bot {
                 //log(`Stop order BUY`)
                 order.setTrading(true)
                 await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity())
-                this.counters[pair].add(currentPrice, order.getPriceStart())
-                order.setTrading(false)
+                this.counters.add(order.getPriceStop(), order.getPriceStart())
             }
         }
 
@@ -125,8 +132,7 @@ export class Bot {
                 //log(`Stop order SELL`)
                 order.setTrading(true)
                 await this.stopSignal(pair, order, OrderSide.BUY, order.getQuantity())
-                this.counters[pair].add(currentPrice, order.getPriceStart())
-                order.setTrading(false)
+                this.counters.add(order.getPriceStart(), order.getPriceStop())
             }
         }
 
@@ -147,10 +153,6 @@ export class Bot {
                 order.setTrading(false)
             }
         }
-
-        /**Report */
-        await this.report(candles, strategyConfig, order, pair)
-
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {
@@ -196,6 +198,7 @@ export class Bot {
             error(quantity)
         });
         await order.closeOpenOrders(pair).catch(error);
+        order.setTrading(false)
     }
 
     async report(candles, strategyConfig, order, pair) {
@@ -217,4 +220,5 @@ export class Bot {
             this.currentHour = hour
         }
     }
+
 }
