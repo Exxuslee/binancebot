@@ -9,7 +9,7 @@ import {Order} from "./Order";
 import {getPricePrecision, validQuantity} from "../utils/currencyInfo";
 import {sendDailyResult, sendHourResult} from "../telegram/message";
 import {Counter} from "./Counter";
-import {Aver} from "./Aver";
+import {Aver} from "../candles/Aver";
 
 export class Bot {
     private strategyConfigs: StrategyConfig[];
@@ -43,10 +43,10 @@ export class Bot {
 
         let min = Number(dayjs(Date.now()).format('mm'));
         let sec = Number(dayjs(Date.now()).format('ss'));
-        let left = 25200 - min * 60 - sec
+        let left = 3600 - min * 60 - sec
         setTimeout(() =>
             setInterval(() =>
-                sendHourResult(this.telegram, this.counters.getCounter()), 86400000), left * 1000);
+                sendHourResult(this.telegram, this.counters.getCounter()), 3600000), left * 1000);
 
         this.strategyConfigs.forEach((strategyConfig) => {
             const pair = strategyConfig.asset + strategyConfig.base;
@@ -62,6 +62,7 @@ export class Bot {
                 if (AggregatedTrade.quantity == '0.01000000' ||
                     AggregatedTrade.quantity == '0.01500000' ||
                     AggregatedTrade.quantity == '0.05000000' ||
+                    AggregatedTrade.quantity == '0.02000000' ||
                     AggregatedTrade.quantity == '0.03000000'
                 ) {
                     //console.log(AggregatedTrade.quantity, AggregatedTrade.isBuyerMaker, AggregatedTrade.price)
