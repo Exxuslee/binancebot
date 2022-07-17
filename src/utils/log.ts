@@ -120,3 +120,19 @@ export function logStop(pair: string, price: number, type: string, priceStart: n
         : console.log(`${chalk.redBright(logDate)} : ${message}`)
 
 }
+
+export function logStopProfit(pair: string, price: number, type: string, priceStart: number) {
+    const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+    let percent = type == OrderSide.BUY
+        ? (priceStart - price) / price * 100
+        : (price - priceStart) / priceStart * 100
+    let percent2 = percent.toFixed(3)
+    let p1 = priceStart.toFixed(2)
+    let p2 = price.toFixed(2)
+    const message = [type, pair, `${p1}/${p2}`, '=%\t', percent2].join(' ')
+    logger.info(`${logDate} : ${message}`);
+    percent > 0
+        ? console.log(`${chalk.cyan(logDate)} : ${message}`)
+        : console.log(`${chalk.redBright(logDate)} : ${message}`)
+
+}
