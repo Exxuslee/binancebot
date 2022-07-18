@@ -8,8 +8,8 @@ interface Options {
 }
 
 const defaultOptions: Options = {
-    fee: 0.0007,
-    doubleFee: 0.0015,
+    fee: 0.0008,
+    doubleFee: 0.00125,
     pair: "BTCUSDT"
 };
 
