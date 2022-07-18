@@ -93,16 +93,9 @@ export function logStart(pair: string, price: number, size: number, type: string
 }
 
 export function logStopLose(pair: string, price: number, type: string, priceStart: number) {
-    const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-    let percent = type == OrderSide.BUY
-        ? (price - priceStart) / price * 100
-        : (priceStart - price) / priceStart * 100
-    let percent2 = percent.toFixed(3)
-    let p1 = priceStart.toFixed(2)
-    let p2 = price.toFixed(2)
-    const message = [type, pair, `${p1}/${p2}`, '=%\t', percent2].join(' ')
-    logger.info(`${logDate} : ${message}`);
-    console.log(`${chalk.red(logDate)} : ${message}`);
+    let message = calculate(pair, price, type, priceStart)
+    logger.info(message);
+    console.log(`${chalk.red(message)}`)
 }
 
 export function logStop(pair: string, price: number, type: string, priceStart: number) {
@@ -122,6 +115,13 @@ export function logStop(pair: string, price: number, type: string, priceStart: n
 }
 
 export function logStopProfit(pair: string, price: number, type: string, priceStart: number) {
+    let message = calculate(pair, price, type, priceStart)
+    logger.info(message);
+    console.log(`${chalk.cyan(message)}`)
+}
+
+
+function calculate(pair: string, price: number, type: string, priceStart: number) {
     const logDate = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
     let percent = type == OrderSide.BUY
         ? (priceStart - price) / price * 100
@@ -130,9 +130,5 @@ export function logStopProfit(pair: string, price: number, type: string, priceSt
     let p1 = priceStart.toFixed(2)
     let p2 = price.toFixed(2)
     const message = [type, pair, `${p1}/${p2}`, '=%\t', percent2].join(' ')
-    logger.info(`${logDate} : ${message}`);
-    percent > 0
-        ? console.log(`${chalk.cyan(logDate)} : ${message}`)
-        : console.log(`${chalk.redBright(logDate)} : ${message}`)
-
+    return `${logDate} : ${message}`
 }
