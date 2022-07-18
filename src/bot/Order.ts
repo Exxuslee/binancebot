@@ -25,7 +25,9 @@ export class Order {
             //log(`Close all open orders for the pair ${pair} ${temp}`);
             this._iBear = false
             this._iBull = false
+            return true
         }
+        return false
     }
 
     async viewOpenOrders(pair: string) {
@@ -92,8 +94,23 @@ export class Order {
         }).then(() => {
             this._priceTP = price
         })
-
     }
+
+    async orderOco(binanceClient: Binance, pair: string, quantity: number, orderSide, priceTP: number, priceSL: number) {
+        await binanceClient.orderOco({
+            side: orderSide,
+            symbol: pair,
+            quantity: String(quantity),
+            price: String(priceTP),
+            stopPrice: String(priceSL),
+            stopLimitPrice: String(priceSL)
+        }).then(() => {
+            this._priceTP = priceTP
+            this._priceSL = priceSL
+        })
+    }
+
+
 
     async stop(binanceClient: Binance, pair: string, quantity: number, orderSide,) {
         let resp = await binanceClient.order({

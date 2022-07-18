@@ -2,11 +2,13 @@ import {ExchangeInfo, OrderSide} from 'binance-api-node';
 import {validPrice} from "../../utils/currencyInfo";
 
 interface Options {
-    pair: string
-    doubleFee?: number;
+    pair: string,
+    doubleFee: number,
+    fee: number
 }
 
 const defaultOptions: Options = {
+    fee: 0.0007,
     doubleFee: 0.0015,
     pair: "BTCUSDT"
 };
@@ -28,9 +30,12 @@ const strategy = (
         quantityPercentage: 0.0011,
     }]
 
+    // let rawStopLoss = side === OrderSide.BUY
+    //     ? Math.min(candles[0].low, candles[1].low, candles[2].low, candles[3].low)
+    //     : Math.max(candles[0].high, candles[1].high, candles[2].high, candles[3].high)
     let rawStopLoss = side === OrderSide.BUY
-        ? Math.min(candles[0].low, candles[1].low, candles[2].low, candles[3].low)
-        : Math.max(candles[0].high, candles[1].high, candles[2].high, candles[3].high)
+        ? (price - price * options.fee)
+        : (price + price * options.fee)
     let stopLoss = validPrice(rawStopLoss)
 
     return {takeProfits, stopLoss};
