@@ -28,10 +28,7 @@ export class Aver {
 
     }
 
-    private initSlow(aggTrade
-                         :
-                         AggregatedTrade
-    ) {
+    private initSlow(aggTrade: AggregatedTrade) {
 
         this.currentCandle = {
             symbol: aggTrade.symbol,
