@@ -24,7 +24,7 @@ export class Aver {
         else ++this.currentCandle.trades
         this.currentCandle.volume += Number(aggTrade.quantity)
 
-        if (this.currentCandle.rage > 2) this.finishSlow(aggTrade)
+        if (this.currentCandle.rage > 0) this.finishSlow(aggTrade)
 
     }
 

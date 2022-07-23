@@ -58,16 +58,22 @@ export class Bot {
             let order = new Order()
             order.closeOpenOrders(pair)
             binanceClient.ws.aggTrades(pair, AggregatedTrade => {
-                //console.log(AggregatedTrade.quantity)
-                if (AggregatedTrade.quantity == '0.01000000' ||
-                    AggregatedTrade.quantity == '0.01500000' ||
-                    AggregatedTrade.quantity == '0.05000000' ||
-                    AggregatedTrade.quantity == '0.10000000' ||
-                    AggregatedTrade.quantity == '0.02000000' ||
-                    AggregatedTrade.quantity == '0.04000000' ||
-                    AggregatedTrade.quantity == '0.03000000'
+                console.log(AggregatedTrade.quantity, AggregatedTrade.isBuyerMaker, AggregatedTrade.price)
+
+                if (
+                    //AggregatedTrade.quantity == '0.00050000' ||
+                    //AggregatedTrade.quantity == '0.00020000' ||
+                    //AggregatedTrade.quantity == '0.0040000' ||
+                    //AggregatedTrade.quantity == '0.00150000' ||
+                    //AggregatedTrade.quantity == '0.00100000'
+                    // AggregatedTrade.quantity == '0.00200000' ||
+                    // AggregatedTrade.quantity == '0.00300000' ||
+                    // AggregatedTrade.quantity == '0.01000000' ||
+                    // AggregatedTrade.quantity == '0.03000000' ||
+                    // AggregatedTrade.quantity == '0.05000000'
+                    Number(AggregatedTrade.quantity) > 1.0
                 ) {
-                    //console.log(AggregatedTrade.quantity, AggregatedTrade.isBuyerMaker, AggregatedTrade.price)
+                    console.log(AggregatedTrade.quantity, AggregatedTrade.isBuyerMaker, AggregatedTrade.price)
                     view.update(AggregatedTrade)
                 }
             })
@@ -107,25 +113,25 @@ export class Bot {
         }
 
         /** Stop order BUY */
-        if (order.getBull() && !order.getTrading()) {
-            if (candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
-            if (candles[0].isBuyerMaker && candles[1].isBuyerMaker) {
-                //log(`Stop order BUY`)
-                await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity(), 0)
-            }
-        }
+        // if (order.getBull() && !order.getTrading()) {
+        //     if (candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
+        //     if (candles[0].isBuyerMaker && candles[1].isBuyerMaker) {
+        //         //log(`Stop order BUY`)
+        //         await this.stopSignal(pair, order, OrderSide.SELL, order.getQuantity(), 0)
+        //     }
+        // }
 
         /**Stop order SELL */
-        if (order.getBear() && !order.getTrading()) {
-            if (!candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
-            if (!candles[0].isBuyerMaker && !candles[1].isBuyerMaker) {
-                //log(`Stop order SELL`)
-                await this.stopSignal(pair, order, OrderSide.BUY, order.getQuantity(), 0)
-            }
-        }
+        // if (order.getBear() && !order.getTrading()) {
+        //     if (!candles[0].isBuyerMaker) order.setVolume(order.getVolume() - candles[0].volume)
+        //     if (!candles[0].isBuyerMaker && !candles[1].isBuyerMaker) {
+        //         //log(`Stop order SELL`)
+        //         await this.stopSignal(pair, order, OrderSide.BUY, order.getQuantity(), 0)
+        //     }
+        // }
 
         /** Ready to start */
-        if (!order.getBull() && !order.getBear() && !order.getTrading()) {
+        //if (!order.getBull() && !order.getBear() && !order.getTrading()) {
 
             /** Start order BUY */
             if (strategyConfig.buyStrategy(candles)) {
@@ -140,7 +146,7 @@ export class Bot {
                 await this.startSignal(candles, strategyConfig, pair, order, currentPrice, OrderSide.SELL)
                 order.setTrading(false)
             }
-        }
+        //}
     }
 
     async startSignal(candlesArray, strategyConfig, pair, order, currentPrice, orderSide) {

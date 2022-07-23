@@ -31,14 +31,14 @@ export const isBuySignal = (
     //let bull5: boolean = !lostPower(candles)
     //let bull6: boolean = fallVolume(candles)
     //let bull7 = !littleTime(candles)
-    let bull8 = candles[0].close > candles[1].close
+    //let bull8 = candles[0].close > candles[1].close
 
     //if (bull1) log(`WMA: ${bull2} ${bull3}`)
     //if (bull1 && bull2 && bull3 && !bull4 && bull5 && bull6) log(`Relax - ${sumStart.toFixed(2)} < ${sumEnd.toFixed(2)}`)
     //if (bull1 && bull2 && bull3 && !bull5) log(`Lost power`)
     //if (bull1 && bull2 && bull3 && bull4 && bull5 && !bull6) log(`Not fall volume`)
     //if (bull1 && bull2 && bull3) console.log('isBuySignal', values[values.length - 1], candles[0].high, candles[1].high)
-    return bull1 && bull8
+    return bull1
 };
 
 export const isSellSignal = (
@@ -58,14 +58,14 @@ export const isSellSignal = (
     //let bear5: boolean = !lostPower(candles)
     //let bear6: boolean = fallVolume(candles)
     //let bear7 = !littleTime(candles)
-    let bear8 = candles[0].close < candles[1].close
+    //let bear8 = candles[0].close < candles[1].close
 
     //if (bear1) log(`WMA: ${bear2} ${bear3}`)
     //if (bear1 && bear2 && bear3 && !bear4 && bear5 && bear6) log(`Relax - ${sumStart.toFixed(2)} < ${sumEnd.toFixed(2)}`)
     //if (bear1 && bear2 && bear3 && !bear5) log(`Lost power`)
     //if (bear1 && bear2 && bear3 && bear4 && bear5 && !bear6) log(`Not rise volume`)
     //if (bear1 && bear2 && bear3) console.log('isSellSignal', values[values.length - 1], candles[0].low, candles[1].low)
-    return bear1 && bear8
+    return bear1
 };
 
 function lostPower(candles: CandleRage[]) {
